@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "paths": {
+      "/@/*": [
+        "./src/*"
+      ],
+      "#/*": [
+        "../shared/*"
+      ]
+    },
+  },
+  "files": [
+    "src/index.ts",
+  ],
+  "include": [
+    "../../types/**/*.d.ts",
+    "../shared/types/**/*.d.ts",
+    "src/**/*.ts"
+  ]
+}

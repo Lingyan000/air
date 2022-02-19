@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "esnext",
+    "sourceMap": true,
+    "moduleResolution": "Node",
+    "skipLibCheck": true,
+    "strict": true,
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "noImplicitAny": false,
+    "types": [
+      "node"
+    ],
+    "typeRoots": [
+      "node_modules/@types",
+    ],
+    "lib": [
+      "ESNext"
+    ]
+  },
+}

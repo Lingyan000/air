@@ -1,0 +1,13 @@
+{
+    "cSpell.words": [
+        "Articlelistrule",
+        "fyarea",
+        "fyclass",
+        "fypage",
+        "fysort",
+        "fyyear"
+    ],
+    "emmet.includeLanguages": {
+      "postcss": "css"
+    }
+}
