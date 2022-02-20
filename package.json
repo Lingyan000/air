@@ -15,7 +15,8 @@
     "build:preload:types": "dts-cb -i \"packages/preload/tsconfig.json\" -o \"packages/preload/exposedInMainWorld.d.ts\"",
     "build:renderer": "cd ./packages/renderer && vite build && esno ./build/script/postBuild.ts",
     "precompile": "cross-env MODE=production npm run build",
-    "compile": "cross-env MODE=production electron-builder build --config electron-builder.config.js --dir --config.asar=false --ia32",
+    "compile": "cross-env MODE=production electron-builder build --config electron-builder.config.js --config.asar=false",
+    "compile:release": "cross-env MODE=production electron-builder build --config electron-builder.config.js --config.asar=false --publish always",
     "pretest": "npm run build",
     "test": "node tests/app.spec.js",
     "watch": "node scripts/watch.js",
@@ -28,7 +29,7 @@
     "typecheck": "npm run typecheck-main && npm run typecheck-preload && npm run typecheck-renderer",
     "pretypecheck-renderer": "dts-cb -i packages/preload/src/**/*.ts -o packages/preload/exposedInMainWorld.d.ts",
     "bytenode-test": "bytenode --compile ./dist/win-ia32-unpacked/resources/app/packages/main/dist/index.js --electron",
-    "bytenode": "D:/p1207/Desktop/electron-v17.0.1-win32-ia32/electron.exe scripts/bytenode.js"
+    "bytenode": "electron scripts/bytenode.js"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged",

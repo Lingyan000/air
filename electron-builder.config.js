@@ -10,13 +10,55 @@ if (process.env.VITE_APP_VERSION === undefined) {
  * @see https://www.electron.build/configuration/configuration
  */
 const config = {
+  appId: 'com.Lingyan000.air',
+  productName: '空气',
+  publish: [
+    {
+      provider: 'github',
+      owner: 'Lingyan000',
+      repo: 'air',
+      releaseType: 'draft',
+    },
+  ],
   directories: {
     output: 'dist',
     buildResources: 'buildResources',
   },
+  copyright: 'Copyright © 2022',
+  dmg: {
+    contents: [
+      {
+        x: 410,
+        y: 150,
+        type: 'link',
+        path: '/Applications',
+      },
+      {
+        x: 130,
+        y: 150,
+        type: 'file',
+      },
+    ],
+  },
+  nsis: {
+    oneClick: false,
+    allowToChangeInstallationDirectory: true,
+    shortcutName: '空气',
+  },
+  win: {
+    target: [
+      {
+        target: 'nsis',
+        arch: ['x64'],
+      },
+    ],
+  },
   files: ['packages/**/dist/**'],
   extraMetadata: {
     version: process.env.VITE_APP_VERSION,
+  },
+  snap: {
+    publish: ['github'],
   },
 };
 
