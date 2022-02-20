@@ -14,7 +14,9 @@ const env = loadEnv(process.env.MODE, root);
  */
 const config = {
   define: {
-    HK_PRIVATE_KEY: env.VITE_HK_PRIVATE_KEY.split(''),
+    HK_PRIVATE_KEY: (
+      env.VITE_HK_PRIVATE_KEY || 'YWlyMTExMTExOTk5NjY2MzMzMzIyMjIwMDAwMDAwMDA='
+    ).split(''),
   },
   mode: process.env.MODE,
   root: PACKAGE_ROOT,

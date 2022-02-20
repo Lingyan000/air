@@ -14,7 +14,7 @@ export const normalSpan: { [key in ColType]: string } = {
   icon_small_3: '8',
   icon_small_4: '',
   icon_round_small_4: '6',
-  input: '',
+  input: '24 800:48 1000:64',
   line: '',
   line_blank: '24 800:48 1000:64',
   long_text: '24 800:48 1000:64',

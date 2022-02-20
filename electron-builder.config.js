@@ -49,7 +49,7 @@ const config = {
     target: [
       {
         target: 'nsis',
-        arch: ['x64'],
+        arch: [process.arch],
       },
     ],
   },

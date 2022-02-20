@@ -97,6 +97,7 @@ export default class AirVm {
       AIR_RESCODE: this.rescode,
       writeFile: this.writeFile,
       MY_URL: this.ctx.myUrl,
+      eval: this.eval,
       evalPrivateJS: this.evalPrivateJS,
       log: console.log,
       base64Encode: this.base64Encode,
@@ -121,12 +122,21 @@ export default class AirVm {
       getMyVar: this.getMyVar,
       putMyVar: this.putMyVar,
       clearMyVar: this.clearMyVar,
+      getItem: this.getMyVar, // TODO
+      setItem: this.putMyVar, // TODO
+      clearItem: this.clearMyVar, // TODO
+      confirm: () => {}, // TODO
+      setPageTitle: () => {}, // TODO
       setLastChapterRule: this.setLastChapterRule, // TODO
       showLoading: this.showLoading, // TODO
       addListener: this.addListener, // TODO
       getUrl: this.getUrl,
     };
   }
+
+  eval = wrap(this, (that, value: string) => {
+    that.vm?.run(value);
+  });
 
   getHomeSandbox() {
     return {
