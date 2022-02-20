@@ -21,6 +21,11 @@ jobs:
           node-version: 16
           architecture: ${{ matrix.architecture }}
 
+      - uses: actions/setup-python@v2
+        with:
+            python-version: "2.x"
+
+
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
