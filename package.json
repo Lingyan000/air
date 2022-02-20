@@ -16,6 +16,7 @@
     "build:renderer": "cd ./packages/renderer && vite build && esno ./build/script/postBuild.ts",
     "precompile": "cross-env MODE=production npm run build",
     "compile": "cross-env MODE=production electron-builder build --config electron-builder.config.js --config.asar=false",
+    "precompile:release": "cross-env MODE=production npm run build",
     "compile:release": "cross-env MODE=production electron-builder build --config electron-builder.config.js --config.asar=false --publish always",
     "pretest": "npm run build",
     "test": "node tests/app.spec.js",
