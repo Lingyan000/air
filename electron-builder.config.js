@@ -10,6 +10,7 @@ if (process.env.VITE_APP_VERSION === undefined) {
  * @see https://www.electron.build/configuration/configuration
  */
 const config = {
+  npmRebuild: false,
   appId: 'com.Lingyan000.air',
   productName: '空气',
   publish: [

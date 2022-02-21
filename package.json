@@ -8,7 +8,6 @@
   },
   "main": "packages/main/dist/index.cjs",
   "scripts": {
-    "build:xxx": "cd ./packages/main && swc src/child_process -s -d ./dist2",
     "build": "npm run build:main && npm run build:preload && npm run build:renderer && npm run bytenode",
     "build:main": "cd ./packages/main && vite build",
     "build:preload": "cd ./packages/preload && vite build",

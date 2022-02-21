@@ -21,12 +21,6 @@ jobs:
           node-version: 16
           architecture: ${{ matrix.architecture }}
 
-      - name: Configure MSVS
-        run: npm config set msvs_version 2017
-
-      - name: setup node-gyp
-        run: npm install -g node-gyp@latest
-
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
