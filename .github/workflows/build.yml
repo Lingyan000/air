@@ -21,10 +21,11 @@ jobs:
           node-version: 16
           architecture: ${{ matrix.architecture }}
 
-      - uses: actions/setup-python@v2
-        with:
-            python-version: "2.x"
+      - name: Configure MSVS
+        run: npm config set msvs_version 2017
 
+      - name: setup node-gyp
+        run: npm install -g node-gyp@latest
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
