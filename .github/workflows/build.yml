@@ -35,3 +35,8 @@ jobs:
           args: '--config electron-builder.config.js --config.asar=false'
         env:
           VITE_HK_PRIVATE_KEY: ${{ secrets.HK_PRIVATE_KEY }}
+
+      - name: Upload air
+        uses: actions/upload-artifact@v2
+        with:
+          path: './dist/*.exe'
