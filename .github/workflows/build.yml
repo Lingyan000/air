@@ -40,7 +40,7 @@ jobs:
         if: success()
         id: prepareArtifact
         run: |
-          airExeName=`ls dist/空气 Setup *.exe | awk -F '(/|.exe)' '{print $3}'` && echo "::set-output name=airExeName::airExeName"
+          airExeName=`ls 'dist/空气 Setup *.exe' | awk -F '(/|.exe)' '{print $3}'` && echo "::set-output name=airExeName::airExeName"
 
       - name: Upload air
         uses: actions/upload-artifact@v2
