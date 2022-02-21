@@ -40,10 +40,10 @@ jobs:
         if: success()
         id: prepareArtifact
         run: |
-          airExeName=`ls 'dist/空气 Setup *.exe' | awk -F '(/|.exe)' '{print $3}'` && echo "::set-output name=airExeName::airExeName"
+          $airSetupName=ls 'dist/空气 Setup *.exe';$airSetupName=$airSetupName[0].Name.replace('.exe', '');echo "::set-output name=airSetupName::$airSetupName"
 
       - name: Upload air
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ steps.prepareArtifact.outputs.airExeName }}
+          name: ${{ steps.prepareArtifact.outputs.airSetupName }}
           path: './dist/*.exe'
