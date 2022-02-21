@@ -45,5 +45,20 @@ jobs:
       - name: Upload air
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ steps.prepareArtifact.outputs.airSetupName }}
+          name: ${{ steps.prepareArtifact.outputs.airSetupName }}-${{ matrix.architecture }}
           path: './dist/*.exe'
+
+      - name: Post to channel
+        if: ${{ github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/main' }}
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ${{ github.actor }} created commit:
+            Commit message: ${{ github.event.commits[0].message }}
+
+            Repository: ${{ github.repository }}
+
+            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
+          document: ${{ github.workspace }}/dist/${{ steps.prepareArtifact.outputs.airSetupName }}.exe
