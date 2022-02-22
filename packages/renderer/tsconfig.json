@@ -4,27 +4,13 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "/@/*": [
-        "./src/*"
-      ],
-      "#/*": [
-        "../shared/*"
-      ],
-      "~assets/*": [
-        "./assets/*"
-      ],
-      "#main/*": [
-        "../main/src/*"
-      ],
+      "/@/*": ["./src/*"],
+      "#/*": ["../shared/*"],
+      "~assets/*": ["./assets/*"],
+      "#main/*": ["../main/src/*"]
     },
-    "typeRoots": [
-      "./types"
-    ],
-    "lib": [
-      "ESNext",
-      "dom",
-      "dom.iterable"
-    ]
+    "typeRoots": ["./types"],
+    "lib": ["ESNext", "dom", "dom.iterable"]
   },
   "include": [
     "src/**/*.vue",
@@ -33,6 +19,6 @@
     "types/**/*.d.ts",
     "../../types/**/*.d.ts",
     "../preload/exposedInMainWorld.d.ts",
-    "../shared/types/**/*.d.ts",
+    "../shared/types/**/*.d.ts"
   ]
 }

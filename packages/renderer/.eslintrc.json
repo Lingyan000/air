@@ -9,6 +9,10 @@
     "prettier",
     "plugin:prettier/recommended"
   ],
+  "rules": {
+    "vue/no-setup-props-destructure": "off",
+    "vue/no-v-html": "off"
+  },
   "parserOptions": {
     "parser": "@typescript-eslint/parser",
     "ecmaVersion": 12,

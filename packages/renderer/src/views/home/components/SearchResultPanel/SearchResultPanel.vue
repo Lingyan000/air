@@ -7,7 +7,6 @@
     NGrid,
     NGi,
     NBackTop,
-    useMessage,
     useLoadingBar,
   } from 'naive-ui';
   import { getSearchRuleResult, preHandle } from '/@/api/parse';
@@ -119,7 +118,7 @@
     to="#layout-body"
     display-directive="show"
     class="searchResultPanel"
-    z-index="1999"
+    :z-index="1999"
   >
     <n-drawer-content :native-scrollbar="false">
       <template #header>
@@ -134,7 +133,7 @@
               :image="item.img || item.pic_url"
               :description="item.desc"
               :content="item.content"
-              :rule-title="searchRuleRef && searchRuleRef.title"
+              :rule-title="searchRuleRef ? searchRuleRef.title : ''"
               @click="handleClick(item)"
             ></search-item>
           </n-gi>

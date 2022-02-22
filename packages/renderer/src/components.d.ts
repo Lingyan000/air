@@ -4,82 +4,82 @@
 
 declare module 'vue' {
   export interface GlobalComponents {
-    AirColComponent: typeof import('./components/AirColComponent/AirColComponent.vue')['default']
-    AirDplayer: typeof import('./components/AirDplayer/AirDplayer.vue')['default']
-    AppProvider: typeof import('./components/AppProvider/index.vue')['default']
-    Artplayer: typeof import('./components/Artplayer/Artplayer.vue')['default']
-    Avatar: typeof import('./components/AirColComponent/Avatar.vue')['default']
-    BlankBlock: typeof import('./components/AirColComponent/BlankBlock.vue')['default']
+    AirColComponent: typeof import('./components/AirColComponent/AirColComponent.vue')['default'];
+    AirDplayer: typeof import('./components/AirDplayer/AirDplayer.vue')['default'];
+    AppProvider: typeof import('./components/AppProvider/index.vue')['default'];
+    Artplayer: typeof import('./components/Artplayer/Artplayer.vue')['default'];
+    Avatar: typeof import('./components/AirColComponent/Avatar.vue')['default'];
+    BlankBlock: typeof import('./components/AirColComponent/BlankBlock.vue')['default'];
     Dplayer: typeof import('./components/AirDplayer/Dplayer.vue')['default'];
-    Icon2Round: typeof import('./components/AirColComponent/Icon2Round.vue')['default']
-    IconRoundSmall4: typeof import('./components/AirColComponent/IconRoundSmall4.vue')['default']
-    IconSmall3: typeof import('./components/AirColComponent/IconSmall3.vue')['default']
-    LineBlank: typeof import('./components/AirColComponent/LineBlank.vue')['default']
-    LongText: typeof import('./components/AirColComponent/LongText.vue')['default']
-    MessageContent: typeof import('./components/MessageContent/index.vue')['default']
-    Movie1: typeof import('./components/AirColComponent/Movie1.vue')['default']
-    Movie1LeftPic: typeof import('./components/AirColComponent/Movie1LeftPic.vue')['default']
-    Movie1VerticalPic: typeof import('./components/AirColComponent/Movie1VerticalPic.vue')['default']
-    Movie1VerticalPicBlur: typeof import('./components/AirColComponent/Movie1VerticalPicBlur.vue')['default']
-    Movie2: typeof import('./components/AirColComponent/Movie2.vue')['default']
-    Movie3: typeof import('./components/AirColComponent/Movie3.vue')['default']
-    NAvatar: typeof import('naive-ui')['NAvatar']
-    NBackTop: typeof import('naive-ui')['NBackTop']
+    Icon2Round: typeof import('./components/AirColComponent/Icon2Round.vue')['default'];
+    IconRoundSmall4: typeof import('./components/AirColComponent/IconRoundSmall4.vue')['default'];
+    IconSmall3: typeof import('./components/AirColComponent/IconSmall3.vue')['default'];
+    LineBlank: typeof import('./components/AirColComponent/LineBlank.vue')['default'];
+    LongText: typeof import('./components/AirColComponent/LongText.vue')['default'];
+    MessageContent: typeof import('./components/MessageContent/index.vue')['default'];
+    Movie1: typeof import('./components/AirColComponent/Movie1.vue')['default'];
+    Movie1LeftPic: typeof import('./components/AirColComponent/Movie1LeftPic.vue')['default'];
+    Movie1VerticalPic: typeof import('./components/AirColComponent/Movie1VerticalPic.vue')['default'];
+    Movie1VerticalPicBlur: typeof import('./components/AirColComponent/Movie1VerticalPicBlur.vue')['default'];
+    Movie2: typeof import('./components/AirColComponent/Movie2.vue')['default'];
+    Movie3: typeof import('./components/AirColComponent/Movie3.vue')['default'];
+    NAvatar: typeof import('naive-ui')['NAvatar'];
+    NBackTop: typeof import('naive-ui')['NBackTop'];
     NButto: typeof import('naive-ui')['NButto'];
-    NButton: typeof import('naive-ui')['NButton']
-    NCard: typeof import('naive-ui')['NCard']
-    NCol: typeof import('naive-ui')['NCol']
-    NDialogProvider: typeof import('naive-ui')['NDialogProvider']
-    NDivider: typeof import('naive-ui')['NDivider']
-    NDrawer: typeof import('naive-ui')['NDrawer']
-    NDrawerContent: typeof import('naive-ui')['NDrawerContent']
-    NElement: typeof import('naive-ui')['NElement']
-    NEllipsis: typeof import('naive-ui')['NEllipsis']
-    NEmpty: typeof import('naive-ui')['NEmpty']
-    NForm: typeof import('naive-ui')['NForm']
+    NButton: typeof import('naive-ui')['NButton'];
+    NCard: typeof import('naive-ui')['NCard'];
+    NCol: typeof import('naive-ui')['NCol'];
+    NDialogProvider: typeof import('naive-ui')['NDialogProvider'];
+    NDivider: typeof import('naive-ui')['NDivider'];
+    NDrawer: typeof import('naive-ui')['NDrawer'];
+    NDrawerContent: typeof import('naive-ui')['NDrawerContent'];
+    NElement: typeof import('naive-ui')['NElement'];
+    NEllipsis: typeof import('naive-ui')['NEllipsis'];
+    NEmpty: typeof import('naive-ui')['NEmpty'];
+    NForm: typeof import('naive-ui')['NForm'];
     NFormControl: typeof import('naive-ui')['NFormControl'];
-    NFormItem: typeof import('naive-ui')['NFormItem']
+    NFormItem: typeof import('naive-ui')['NFormItem'];
     NFormLabel: typeof import('naive-ui')['NFormLabel'];
-    NGi: typeof import('naive-ui')['NGi']
+    NGi: typeof import('naive-ui')['NGi'];
     NGI: typeof import('naive-ui')['NGI'];
-    NGrid: typeof import('naive-ui')['NGrid']
+    NGrid: typeof import('naive-ui')['NGrid'];
     NH1: typeof import('naive-ui')['NH1'];
     NH4: typeof import('naive-ui')['NH4'];
-    NIcon: typeof import('naive-ui')['NIcon']
-    NImage: typeof import('naive-ui')['NImage']
-    NInput: typeof import('naive-ui')['NInput']
+    NIcon: typeof import('naive-ui')['NIcon'];
+    NImage: typeof import('naive-ui')['NImage'];
+    NInput: typeof import('naive-ui')['NInput'];
     NInputGroup: typeof import('naive-ui')['NInputGroup'];
     NInputGroupu: typeof import('naive-ui')['NInputGroupu'];
     NLayout: typeof import('naive-ui')['NLayout'];
-    NLayoutHeader: typeof import('naive-ui')['NLayoutHeader']
-    NLayoutSider: typeof import('naive-ui')['NLayoutSider']
-    NLoadingBarProvider: typeof import('naive-ui')['NLoadingBarProvider']
-    NLog: typeof import('naive-ui')['NLog']
-    NMenu: typeof import('naive-ui')['NMenu']
-    NMessageProvider: typeof import('naive-ui')['NMessageProvider']
-    NModal: typeof import('naive-ui')['NModal']
-    NP: typeof import('naive-ui')['NP']
-    NPageHeader: typeof import('naive-ui')['NPageHeader']
-    NRow: typeof import('naive-ui')['NRow']
-    NScrollbar: typeof import('naive-ui')['NScrollbar']
-    NSelect: typeof import('naive-ui')['NSelect']
-    NSpace: typeof import('naive-ui')['NSpace']
-    NSpin: typeof import('naive-ui')['NSpin']
-    NText: typeof import('naive-ui')['NText']
-    NUpload: typeof import('naive-ui')['NUpload']
-    NUploadDragger: typeof import('naive-ui')['NUploadDragger']
-    Pic1: typeof import('./components/AirColComponent/Pic1.vue')['default']
-    Pic2: typeof import('./components/AirColComponent/Pic2.vue')['default']
-    RichText: typeof import('./components/AirColComponent/RichText.vue')['default']
-    ScrollButton: typeof import('./components/AirColComponent/ScrollButton.vue')['default']
-    ScrollButtonList: typeof import('./components/ScrollButtonList/ScrollButtonList.vue')['default']
-    SearchItem: typeof import('./components/SearchItem/index.vue')['default']
-    Text1: typeof import('./components/AirColComponent/Text1.vue')['default']
-    Text2: typeof import('./components/AirColComponent/Text2.vue')['default']
-    Text3: typeof import('./components/AirColComponent/Text3.vue')['default']
-    Text5: typeof import('./components/AirColComponent/Text5.vue')['default']
-    TextCenter1: typeof import('./components/AirColComponent/TextCenter1.vue')['default']
+    NLayoutHeader: typeof import('naive-ui')['NLayoutHeader'];
+    NLayoutSider: typeof import('naive-ui')['NLayoutSider'];
+    NLoadingBarProvider: typeof import('naive-ui')['NLoadingBarProvider'];
+    NLog: typeof import('naive-ui')['NLog'];
+    NMenu: typeof import('naive-ui')['NMenu'];
+    NMessageProvider: typeof import('naive-ui')['NMessageProvider'];
+    NModal: typeof import('naive-ui')['NModal'];
+    NP: typeof import('naive-ui')['NP'];
+    NPageHeader: typeof import('naive-ui')['NPageHeader'];
+    NRow: typeof import('naive-ui')['NRow'];
+    NScrollbar: typeof import('naive-ui')['NScrollbar'];
+    NSelect: typeof import('naive-ui')['NSelect'];
+    NSpace: typeof import('naive-ui')['NSpace'];
+    NSpin: typeof import('naive-ui')['NSpin'];
+    NText: typeof import('naive-ui')['NText'];
+    NUpload: typeof import('naive-ui')['NUpload'];
+    NUploadDragger: typeof import('naive-ui')['NUploadDragger'];
+    Pic1: typeof import('./components/AirColComponent/Pic1.vue')['default'];
+    Pic2: typeof import('./components/AirColComponent/Pic2.vue')['default'];
+    RichText: typeof import('./components/AirColComponent/RichText.vue')['default'];
+    ScrollButton: typeof import('./components/AirColComponent/ScrollButton.vue')['default'];
+    ScrollButtonList: typeof import('./components/ScrollButtonList/ScrollButtonList.vue')['default'];
+    SearchItem: typeof import('./components/SearchItem/index.vue')['default'];
+    Text1: typeof import('./components/AirColComponent/Text1.vue')['default'];
+    Text2: typeof import('./components/AirColComponent/Text2.vue')['default'];
+    Text3: typeof import('./components/AirColComponent/Text3.vue')['default'];
+    Text5: typeof import('./components/AirColComponent/Text5.vue')['default'];
+    TextCenter1: typeof import('./components/AirColComponent/TextCenter1.vue')['default'];
   }
 }
 
-export { }
+export {};

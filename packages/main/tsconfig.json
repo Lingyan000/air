@@ -8,20 +8,10 @@
     "experimentalDecorators": true,
     "baseUrl": ".",
     "paths": {
-      "/@/*": [
-        "./src/*"
-      ],
-      "#/*": [
-        "../shared/*"
-      ]
-    },
+      "/@/*": ["./src/*"],
+      "#/*": ["../shared/*"]
+    }
   },
-  "files": [
-    "src/index.ts",
-  ],
-  "include": [
-    "../../types/**/*.d.ts",
-    "../shared/types/**/*.d.ts",
-    "src/**/*.ts"
-  ]
+  "files": ["src/index.ts"],
+  "include": ["../../types/**/*.d.ts", "../shared/types/**/*.d.ts", "src/**/*.ts"]
 }

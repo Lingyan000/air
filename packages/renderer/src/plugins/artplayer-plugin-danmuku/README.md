@@ -4,8 +4,7 @@ Danmuku plugin for ArtPlayer
 
 ## Demo
 
-[Checkout the demo](https://artplayer.org/?libs=.%2Funcompiled%2Fartplayer-plugin-danmuku.js&example=danmuku) from
-Github Pages
+[Checkout the demo](https://artplayer.org/?libs=.%2Funcompiled%2Fartplayer-plugin-danmuku.js&example=danmuku) from Github Pages
 
 ## Install
 
@@ -28,7 +27,6 @@ import artplayerPluginDanmuku from 'artplayer-plugin-danmuku';
 Or umd builds are also available
 
 ```html
-
 <script src="artplayer-plugin-danmuku.js"></script>
 ```
 

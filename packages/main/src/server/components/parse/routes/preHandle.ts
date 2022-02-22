@@ -7,7 +7,6 @@ import type {
 import articlelistrule from '/@/apis/core/database/sqlite/models/articlelistrule';
 import AirParse from '/@/apis/core/air/parse';
 import { Parse as ParseQuery } from '#/params';
-import { error } from '../../../../../../renderer/src/utils/log';
 
 export default function getRoute() {
   const route: RouteOptions<

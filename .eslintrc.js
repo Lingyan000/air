@@ -73,6 +73,5 @@ module.exports = defineConfig({
         math: 'always',
       },
     ],
-    'vue/no-setup-props-destructure': 'off',
   },
 });
