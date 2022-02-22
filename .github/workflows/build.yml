@@ -48,15 +48,15 @@ jobs:
           name: ${{ steps.prepareArtifact.outputs.airSetupName }}-${{ matrix.architecture }}
           path: './dist/*.exe'
 
-      - name: Post to channel
-        if: ${{ github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/main' }}
-        env:
-          TELEGRAM_TO: ${{ secrets.TELEGRAM_TO }}
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          COMMIT_URL: ${{ github.event.head_commit.url }}
-        run: |
-          if (-not [String]::IsNullOrEmpty("${{ secrets.TELEGRAM_TOKEN }}")) {
-            $airSetup=(ls './dist/空气 Setup *.exe')[0].FullName;
-            curl -v "https://api.telegram.org/bot$env:TELEGRAM_TOKEN/sendMediaGroup?chat_id=$env:TELEGRAM_TO&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2FairSetup%22%7D%5D%22" -F airSetup=@$airSetup;
-          }
+#      - name: Post to channel
+#        if: ${{ github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/main' }}
+#        env:
+#          TELEGRAM_TO: ${{ secrets.TELEGRAM_TO }}
+#          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+#          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+#          COMMIT_URL: ${{ github.event.head_commit.url }}
+#        run: |
+#          if (-not [String]::IsNullOrEmpty("${{ secrets.TELEGRAM_TOKEN }}")) {
+#            $airSetup=(ls './dist/空气 Setup *.exe')[0].FullName;
+#            curl -v "https://api.telegram.org/bot$env:TELEGRAM_TOKEN/sendMediaGroup?chat_id=$env:TELEGRAM_TO&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2FairSetup%22%7D%5D%22" -F airSetup=@$airSetup;
+#          }
