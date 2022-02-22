@@ -56,8 +56,8 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           COMMIT_URL: ${{ github.event.head_commit.url }}
         run: |
-          if (-not [String]::IsNullOrEmpty("${ secrets.TELEGRAM_TOKEN }")) {
+          if (-not [String]::IsNullOrEmpty("${{ secrets.TELEGRAM_TOKEN }}")) {
             $OUTPUT="dist/"
-            $airSetup="{{ steps.prepareArtifact.outputs.airSetupName }}.exe"
-            curl -v "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMediaGroup?chat_id=${TELEGRAM_TO}&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2FairSetup%22%7D%5D%22 -F airSetup="@$airSetup"
+            $airSetup="${{ steps.prepareArtifact.outputs.airSetupName }}.exe"
+            curl -v "https://api.telegram.org/bot$env:TELEGRAM_TOKEN/sendMediaGroup?chat_id=$env:TELEGRAM_TO&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2FairSetup%22%7D%5D%22 -F airSetup="@$airSetup"
           }
