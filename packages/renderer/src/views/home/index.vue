@@ -17,6 +17,7 @@
   import DetailResultPanelList from '/@/views/home/components/DetailResultPanelList/DetailResultPanelList';
   import { isArray } from 'lodash';
   import { displayColType } from '/@/views/home/options';
+  import ImportRule from '/@/views/home/components/ImportRule/ImportRuleButton.vue';
 
   const artilelistruleStore = useArtilelistruleStore();
   const message = useMessage();
@@ -206,6 +207,7 @@
     <!-- 播放器-->
     <player-modal ref="playerModalRef" />
   </div>
+  <import-rule />
   <!-- 加载器 -->
   <n-element>
     <vue-element-loading

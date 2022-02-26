@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from './sequelize';
+import dayjs from 'dayjs';
 
 class ArticleListRule extends Model {
   id!: number;
@@ -43,7 +44,7 @@ ArticleListRule.init(
     id: {
       type: DataTypes.INTEGER,
       unique: true,
-      allowNull: false,
+      autoIncrement: true,
       primaryKey: true,
     }, // 规则id
     area_name: {
@@ -114,7 +115,7 @@ ArticleListRule.init(
     sdetail_col_type: {
       type: DataTypes.TEXT,
       unique: false,
-      allowNull: false,
+      allowNull: true,
     }, // 详情类型
     sdetail_find_rule: {
       type: DataTypes.TEXT,
@@ -143,7 +144,7 @@ ArticleListRule.init(
     },
     title: {
       type: DataTypes.TEXT,
-      unique: false,
+      unique: true,
       allowNull: true,
     },
     titlecolor: {
@@ -211,15 +212,31 @@ ArticleListRule.init(
       unique: false,
       allowNull: true,
     },
+    type: {
+      type: DataTypes.TEXT,
+      unique: false,
+      allowNull: true,
+    },
   },
   {
     sequelize,
     modelName: 'Articlelistrule',
     tableName: 'articlelistrule',
     timestamps: false,
+    createdAt: 'gmtcreate',
+    updatedAt: 'gmtmodified',
   }
 );
 
-ArticleListRule.sync();
+ArticleListRule.beforeCreate((record) => {
+  record.set('gmtcreate', dayjs().valueOf());
+  record.set('gmtmodified', dayjs().valueOf());
+});
+
+ArticleListRule.beforeUpdate((record) => {
+  record.set('gmtmodified', dayjs().valueOf());
+});
+
+ArticleListRule.sync({ alter: true });
 
 export default ArticleListRule;

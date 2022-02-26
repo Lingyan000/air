@@ -106,3 +106,22 @@ interface UrlConfig {
   encoding: string;
   headers: import('got').Headers;
 }
+
+type PasswordSignType =
+  | 'home_rule_url' // 首页合集
+  | 'home_rule' //首页频道
+  | 'search_engine_url' // 搜索引擎合集
+  | 'search_engine_v2' // 搜索引擎
+  | 'js_url' // 网页插件
+  | 'ad_url_rule' // 广告网址拦截
+  | 'bookmark' // 书签规则
+  | 'bookmark_url' // 书签合集
+  | 'file_url' // 本地文件
+  | 'fast_play_urls' // 快速播放白名单
+  | 'xt_dialog_rules' // 嗅探弹窗黑名单
+  | 'ad_subscribe_url' // 广告拦截订阅
+  | 'home_sub' // 小程序规则订阅
+  | 'publish_account' // 云仓库账号密码设置
+  | 'home_rule_v2'; // 小程序
+
+type CloudShearPlateType = 'cmd.im' | 'pasteme.tyrantg.com' | 'netcut.cn';

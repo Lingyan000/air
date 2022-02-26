@@ -55,7 +55,6 @@
 <template>
   <n-modal
     v-model:show="showModal"
-    class="custom-card"
     preset="card"
     title="导入备份"
     size="huge"

@@ -74,10 +74,6 @@ const config = {
         'adm-zip',
         'query-string',
         'socket.io',
-        '@nestjs/core',
-        '@nestjs/common',
-        '@nestjs/swagger',
-        '@nestjs/platform-express',
         'rxjs',
         'reflect-metadata',
         'sequelize-typescript',
@@ -97,6 +93,7 @@ const config = {
         'async',
         'piscina',
         'electron-window-state',
+        'validator',
         ...builtinModules,
       ],
       output: {

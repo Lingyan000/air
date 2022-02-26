@@ -50,6 +50,7 @@
         quaternary
         class="window-icon window-minimize codicon codicon-chrome-minimize"
         style="--color-focus: unset; --text-color-focus: var(--text-color)"
+        :focusable="false"
         @click="minimizeWindow"
       ></n-button>
       <n-button
@@ -57,18 +58,18 @@
         class="window-icon window-max-restore codicon"
         :class="isMaximize ? 'codicon-chrome-restore' : 'codicon-chrome-maximize'"
         style="--color-focus: unset; --text-color-focus: var(--text-color)"
+        :focusable="false"
         @click="maxRestoreWindow"
       ></n-button>
       <n-button
         quaternary
         class="window-icon window-close codicon codicon codicon-chrome-close"
+        :focusable="false"
         style="
-          --color-focus: unset;
-          --text-color-focus: var(--text-color);
-          --color-hover: rgba(232, 17, 35, 0.9);
-          --text-color-hover: rgba(255, 255, 255, 0.82);
-          --color-pressed: rgba(232, 17, 35, 0.75);
-          --text-color-pressed: rgba(255, 255, 255, 0.82);
+          --n-color-hover: rgba(232, 17, 35, 0.9);
+          --n-text-color-hover: rgba(255, 255, 255, 0.82);
+          --n-color-pressed: rgba(232, 17, 35, 0.75);
+          --n-text-color-pressed: rgba(255, 255, 255, 0.82);
         "
         @click="closeWindow"
       ></n-button>

@@ -97,7 +97,7 @@ export default class AirVm {
       AIR_RESCODE: this.rescode,
       writeFile: this.writeFile,
       MY_URL: this.ctx.myUrl,
-      // eval: this.eval,
+      eval: this.eval,
       evalPrivateJS: this.evalPrivateJS,
       log: console.log,
       base64Encode: this.base64Encode,
@@ -135,7 +135,7 @@ export default class AirVm {
   }
 
   eval = wrap(this, (that, value: string) => {
-    that.vm?.run(value);
+    if (typeof value === 'string') that.vm?.run(value);
   });
 
   getHomeSandbox() {

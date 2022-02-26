@@ -1,12 +1,9 @@
 import { app, BrowserWindow, shell, Notification } from 'electron';
 import ipcList from '/@/events/ipcList';
-// import { join } from 'path';
 import { URL } from 'url';
-// import { fork } from 'child_process';
 import { IWindowList } from '#/types/enum';
 import windowManager from '/@/apis/app/window/windowManager';
 import server from '/@/server';
-// import dav from '/@/apis/core/air/dav';
 import createProtocol from '/@/lifeCycle/createProtocol';
 import { protocol } from 'electron';
 
@@ -22,7 +19,6 @@ class LifeCycle {
       { scheme: 'airr', privileges: { secure: true, standard: true } },
     ]);
     server.start();
-    // fork(join(__dirname, '../dist/child_process.cjs'));
     ipcList.listen();
   }
 
