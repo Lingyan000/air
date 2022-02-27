@@ -10,7 +10,6 @@ import { ImportRule } from '/@/apis/core/utils/importRule';
 import { PASSWORD_SIGN } from '#/config';
 import { CloudShearPlate } from '/@/apis/core/utils/cloudShearPlate';
 import * as Models from '#/models';
-import { Http } from '@jonahsnider/util';
 
 export default function importRule() {
   const route: RouteOptions<
@@ -25,9 +24,6 @@ export default function importRule() {
     url: '/articlelistrule/import',
     method: 'POST',
     schema: {
-      response: {
-        [Http.Status.Ok]: Models.Articlelistrule,
-      },
       body: ArticlelistruleQuery.ImportRule,
     },
     handler: async (request) => {
