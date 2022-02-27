@@ -17,7 +17,7 @@
   import DetailResultPanelList from '/@/views/home/components/DetailResultPanelList/DetailResultPanelList';
   import { isArray } from 'lodash';
   import { displayColType } from '/@/views/home/options';
-  import ImportRule from '/@/views/home/components/ImportRule/ImportRuleButton.vue';
+  import ImportRule from '/@/views/home/components/ImportRule/ImportRule.vue';
 
   const artilelistruleStore = useArtilelistruleStore();
   const message = useMessage();
@@ -184,6 +184,10 @@
     playerModalRef.value?.open(title, url, otherOptions);
   }
 
+  function sucessImport() {
+    getList();
+  }
+
   provide(homeInjectionKey, {
     activeNameRef: activeName,
     ruleListRef: ruleList,
@@ -207,7 +211,7 @@
     <!-- 播放器-->
     <player-modal ref="playerModalRef" />
   </div>
-  <import-rule />
+  <import-rule @sucess="sucessImport" />
   <!-- 加载器 -->
   <n-element>
     <vue-element-loading

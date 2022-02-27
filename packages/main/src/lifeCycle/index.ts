@@ -6,6 +6,7 @@ import windowManager from '/@/apis/app/window/windowManager';
 import server from '/@/server';
 import createProtocol from '/@/lifeCycle/createProtocol';
 import { protocol } from 'electron';
+import { importHikerFile } from '/@/apis/core/utils';
 
 const isDevelopment = import.meta.env.MODE === 'development';
 
@@ -15,6 +16,10 @@ const mainWindow: BrowserWindow | null = null;
 
 class LifeCycle {
   private async beforeReady() {
+    if (process.argv.length > 1) {
+      const path = process.argv[1];
+      importHikerFile(path);
+    }
     protocol.registerSchemesAsPrivileged([
       { scheme: 'airr', privileges: { secure: true, standard: true } },
     ]);
@@ -116,11 +121,21 @@ class LifeCycle {
       });
     });
 
-    app.on('second-instance', () => {
+    app.on('second-instance', (event, argv) => {
       // Someone tried to run a second instance, we should focus our window.
       if (mainWindow) {
         if (mainWindow.isMinimized()) mainWindow.restore();
         mainWindow.focus();
+      }
+      if (argv.length > 2) {
+        const path = argv[2];
+        importHikerFile(path);
+      }
+    });
+
+    app.on('open-file', async (event, path) => {
+      if (path.endsWith('.hiker')) {
+        importHikerFile(path);
       }
     });
   }

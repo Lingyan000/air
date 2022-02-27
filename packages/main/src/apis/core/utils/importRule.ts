@@ -8,14 +8,14 @@ export class ImportRule {
   /**
    * 导入
    */
-  public async import(): Promise<void> {
+  public async import(): Promise<ArticleListRule> {
     switch (this.type) {
       case 'home_rule':
-        await this.importHome();
-        break;
+        return await this.importHome();
       case 'home_rule_v2':
-        await this.importHome();
-        break;
+        return await this.importHome();
+      default:
+        throw new Error(`不支持的导入类型: ${this.type}`);
     }
   }
 
@@ -23,7 +23,7 @@ export class ImportRule {
    * 导入首页频道
    * @private
    */
-  private async importHome(): Promise<void> {
+  private async importHome(): Promise<ArticleListRule> {
     let rule: ArticleListRule;
     if (this.rule.startsWith('base64://')) {
       this.rule = CryptoJS.enc.Base64.parse(this.rule.replace(/base64:\/\/@.*@/, '')).toString(
@@ -32,15 +32,20 @@ export class ImportRule {
     }
     if (validator.isJSON(this.rule)) {
       rule = JSON.parse(this.rule);
+      for (const key in rule) {
+        rule[key.toLocaleLowerCase()] = rule[key];
+      }
     } else {
       throw new Error('链接有误！');
     }
-    const [articleListRule] = await ArticleListRule.findOrCreate({
+    let articleListRule = await ArticleListRule.findOne({
       where: { title: rule.title },
-      defaults: rule as any,
     });
     if (articleListRule) {
       await articleListRule.update(rule);
+    } else {
+      articleListRule = await ArticleListRule.create(rule as any);
     }
+    return articleListRule;
   }
 }

@@ -2,6 +2,10 @@ import AdmZip from 'adm-zip';
 import { DB_VERSION, dbUrl } from '/@/config';
 import fs from 'fs-extra';
 import air from '/@/apis/core/air';
+import { getPasswordRuleType } from '/@/apis/core/utils/password';
+import { PASSWORD_SIGN } from '#/config';
+import { ImportRule } from '/@/apis/core/utils/importRule';
+import { Notification } from 'electron';
 
 export function importBackup(fileNameOrRawData: string | Buffer): string[] {
   const messageArr: string[] = [];
@@ -30,4 +34,25 @@ export function importBackup(fileNameOrRawData: string | Buffer): string[] {
   if (!hasEffectiveDb) messageArr.push('没有获取到适合当前版本的db文件。');
 
   return messageArr;
+}
+
+export async function importHikerFile(path: string): Promise<void> {
+  try {
+    const content = fs.readFileSync(path, 'utf8');
+    const type = getPasswordRuleType(content);
+    const rule = content.match(new RegExp(`.*${PASSWORD_SIGN[type].sign}(.*)`))![1] || '';
+    const importRule = new ImportRule(type, rule);
+    const articleListRule = await importRule.import();
+    new Notification({
+      title: '导入成功',
+      body: `成功导入小程序${articleListRule.get('title')}`,
+    }).show();
+  } catch (e: any) {
+    const notification = new Notification({
+      title: '小程序导入失败',
+      body: e.message,
+    });
+    notification.show();
+    air.log.error(e);
+  }
 }

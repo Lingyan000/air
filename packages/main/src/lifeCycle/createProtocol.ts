@@ -40,8 +40,6 @@ export default () => {
     let pathName = '../../' + new URL(req.url).pathname;
     pathName = decodeURI(pathName); // Needed in case URL contains spaces
 
-    air.log.info(pathName);
-
     fs.readFile(path.join(__dirname, pathName), (error, data) => {
       if (error) {
         air.log.error(`Failed to read ${pathName} on airr protocol`, error);

@@ -1,8 +1,14 @@
 <script lang="ts" setup>
   import { Ref, ref } from 'vue';
-  import { NElement, NIcon, NTooltip, NP, NRow, NCol, NButton, NSpace } from 'naive-ui';
+  import { NElement, NIcon, NTooltip, NP, NRow, NCol, NButton, NSpace, useMessage } from 'naive-ui';
   import { Download as DownloadIcon } from '@vicons/ionicons5';
   import { importRule } from '/@/api/articlelistrule';
+
+  const emit = defineEmits<{
+    (e: 'sucess'): void;
+  }>();
+
+  const message = useMessage();
 
   const showModalRef: Ref<boolean> = ref(false);
 
@@ -14,9 +20,15 @@
     loadingRef.value = true;
     importRule({
       password: ruleRef.value,
-    }).finally(() => {
-      loadingRef.value = false;
-    });
+    })
+      .then((res) => {
+        message.success(`成功导入✨${res.title}✨`);
+        showModalRef.value = false;
+        emit('sucess');
+      })
+      .finally(() => {
+        loadingRef.value = false;
+      });
   }
 </script>
 

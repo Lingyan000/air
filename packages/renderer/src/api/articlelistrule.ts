@@ -12,7 +12,7 @@ export function getArticlelistruleList() {
 
 // 导入
 export function importRule(params: ArticlelistruleParams.ImportRule) {
-  return http.request<string>({
+  return http.request<Models.Articlelistrule>({
     url: '/articlelistrule/import',
     method: 'post',
     params,
