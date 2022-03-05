@@ -6,7 +6,7 @@ import { IDav } from '/@/apis/core/air/types';
 import dayjs from 'dayjs';
 import { importBackup } from '/@/apis/core/utils';
 
-class Dav implements IDav {
+export default class Dav implements IDav {
   client: webdav.WebDAVClient;
 
   constructor() {
@@ -60,5 +60,3 @@ class Dav implements IDav {
     };
   }
 }
-
-export default new Dav();

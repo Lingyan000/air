@@ -6,11 +6,10 @@
   import { getArticlelistruleList } from '/@/api/articlelistrule';
   import SearchResultPanel from '/@/views/home/components/SearchResultPanel/SearchResultPanel.vue';
   import { useArtilelistruleStore } from '/@/store/modules/artilelistrule';
-  import PlayerModal from '/@/views/home/components/PlayerModal/PlayerModal.vue';
+  import PlayerPanel from '/@/views/home/components/PlayerPanel/PlayerPanel.vue';
   import { useMessage } from 'naive-ui';
-  import { splitItemUrl } from '/@/utils/rule';
+  import { ItemUrlSplitResult, splitItemUrl } from '/@/utils/rule';
   import { getLazyRuleResult } from '/@/api/parse';
-  import { urlType } from '/@/utils';
   import VueElementLoading from 'vue-element-loading';
   import * as Models from '#/models';
   import { From } from '#/enums';
@@ -31,6 +30,9 @@
   const activeName = ref<string | undefined>(undefined);
   const ruleList = ref<Models.Articlelistrules>([]);
 
+  /**
+   * 获取规则列表
+   */
   const getList = () => {
     return getArticlelistruleList().then((res) => {
       artilelistruleStore.initArtilelistrule(res);
@@ -45,6 +47,11 @@
   // const detailResultPanelRef = ref<InstanceType<typeof DetailResultPanel> | null>(null);
   const detailResultPanelListRef = ref<InstanceType<typeof DetailResultPanelList> | null>(null);
 
+  /**
+   * 搜索
+   * @param id
+   * @param value
+   */
   const handleSearch = (id: number, value: string) => {
     // 判断规则是否含有搜索解析代码
     if (artilelistruleStore.listMap.get(id)!.searchfind) {
@@ -54,6 +61,15 @@
     }
   };
 
+  /**
+   * 打开详情页
+   * @param from
+   * @param type
+   * @param id
+   * @param url
+   * @param title
+   * @param rule
+   */
   const openDetail = ({ from, type, id, url, title, rule = '' }) => {
     detailResultPanelListRef.value?.add().then((detailResultPanel) => {
       detailResultPanel.component.exposed.open(type, from, id, url, title, rule);
@@ -64,31 +80,45 @@
   const isActiveLoading = ref(false);
   const loadingText = ref('');
 
+  /**
+   * 显示加载中
+   * @param text
+   */
   function showLoading(text = ''): void {
     loadingText.value = text;
     isActiveLoading.value = true;
   }
 
+  /**
+   * 隐藏加载中
+   */
   function hideLoading(): void {
     loadingText.value = '';
     isActiveLoading.value = false;
   }
 
-  const onClickItem = (id: number, item: HikerResultOption) => {
-    if (displayColType.includes(item.col_type!)) {
-      return;
-    }
-    if (!item.url) return message.warning('链接为空，规则有误！');
-    const urlRes = splitItemUrl(item.url);
+  /**
+   * 处理链接
+   * @param urlRes
+   * @param id
+   * @param item
+   * @param prefix
+   */
+  function handleLink(
+    urlRes: ItemUrlSplitResult,
+    id: number,
+    item: HikerResultOption,
+    prefix?: string
+  ) {
     switch (urlRes.type) {
       case 'image':
         viewerApi({
-          images: ['air://' + item.url],
+          images: ['air://' + urlRes.url],
           initialViewIndex: 1,
         });
         break;
       case 'video':
-        openPlayerModal(item.title, urlRes.url);
+        openPlayerPanel((prefix ? prefix + '-' : '') + item.title, urlRes.url);
         break;
       case 'lazyRule':
         showLoading('动态解析中');
@@ -98,35 +128,10 @@
           lazyRule: urlRes.rule!,
           from: From['search'],
         })
-          .then(({ data, handle }) => {
-            if (handle.isRefreshPage) {
-              detailResultPanelListRef.value?.refresh();
-            }
-
-            if (data === '') {
-              return message.warning('链接为空，规则有误！');
-            }
-
-            switch (urlType(data)) {
-              case 'video':
-                openPlayerModal(item.title, data);
-                break;
-              case 'toast':
-                message.info(data.replace('toast://', ''));
-                break;
-              case 'object':
-                const obj = JSON.parse(data);
-                if (!obj.urls && isArray(obj.urls) && obj.urls.length) {
-                  message.error('没有链接');
-                  break;
-                }
-                openPlayerModal(item.title, obj.urls[0], {
-                  danmu: obj.danmu ? obj.danmu : undefined,
-                  headers: obj.headers && obj.headers.length ? obj.headers[0] : undefined,
-                });
-                break;
-              default:
-                break;
+          .then(({ data }) => {
+            const lazyRuleUrlRes = splitItemUrl(data);
+            if (!['lazyRule', 'rule'].includes(lazyRuleUrlRes.type)) {
+              handleLink(lazyRuleUrlRes, id, item, prefix);
             }
           })
           .finally(() => {
@@ -154,9 +159,39 @@
         });
         break;
       case 'link':
-        openBrowser(item.url);
+        if (!urlRes.url) return message.warning('链接为空，规则有误！');
+        if (urlRes.url.startsWith('http')) openBrowser(urlRes.url);
+        break;
+      case 'toast':
+        message.info(urlRes.url.replace('toast://', ''));
+        break;
+      case 'object':
+        const obj = JSON.parse(urlRes.url);
+        if (!obj.urls && isArray(obj.urls) && obj.urls.length) {
+          message.error('没有链接');
+          break;
+        }
+        openPlayerPanel(item.title, obj.urls[0], {
+          danmu: obj.danmu ? obj.danmu : undefined,
+          subtitle: obj.subtitle ? obj.subtitle : undefined,
+          headers: obj.headers && obj.headers.length ? obj.headers[0] : undefined,
+        });
         break;
     }
+  }
+
+  /**
+   * 点击项
+   * @param id
+   * @param item
+   * @param prefix
+   */
+  const onClickItem = (id: number, item: HikerResultOption, prefix?: string) => {
+    if (displayColType.includes(item.col_type!)) {
+      return;
+    }
+    const urlRes = splitItemUrl(item.url);
+    handleLink(urlRes, id, item, prefix);
   };
 
   /**
@@ -178,10 +213,16 @@
     }
   };
 
-  const playerModalRef = ref<InstanceType<typeof PlayerModal> | null>(null);
+  const playerPanelRef = ref<InstanceType<typeof PlayerPanel> | null>(null);
 
-  function openPlayerModal(title: string, url: string, otherOptions: any = {}) {
-    playerModalRef.value?.open(title, url, otherOptions);
+  /**
+   * 打开播放器面板
+   * @param title
+   * @param url
+   * @param otherOptions
+   */
+  function openPlayerPanel(title: string, url: string, otherOptions: any = {}) {
+    playerPanelRef.value?.open(title, url, otherOptions);
   }
 
   function sucessImport() {
@@ -206,10 +247,9 @@
     <!-- 搜索面板 -->
     <search-result-panel ref="searchResultPanelRef" @on-click-item="onSearchClickItem" />
     <!-- 二级面板 -->
-    <!--    <detail-result-panel ref="detailResultPanelRef" @click-item="onClickItem" />-->
     <detail-result-panel-list ref="detailResultPanelListRef" @click-item="onClickItem" />
     <!-- 播放器-->
-    <player-modal ref="playerModalRef" />
+    <player-panel ref="playerPanelRef" />
   </div>
   <import-rule @sucess="sucessImport" />
   <!-- 加载器 -->

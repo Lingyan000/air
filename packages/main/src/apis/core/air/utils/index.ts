@@ -34,6 +34,7 @@ export function parseDomRes(cNode: Cheerio<any>, parsing: IParsing) {
   for (let selector of parsing.selectorArr) {
     let eqIndex: string | number = 0;
     if (/,-?\d*/g.test(selector)) [selector, eqIndex] = selector.split(',');
+    selector = selector.replace(/\|\|/g, ',');
     eqIndex = Number(eqIndex) || 0;
     cNode = cNode.find(selector).eq(eqIndex);
   }

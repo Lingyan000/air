@@ -28,7 +28,7 @@
 
   function customRequest({ file, onFinish }) {
     onFinish();
-    if (file.type !== 'application/x-zip-compressed') {
+    if (file.type !== 'application/x-zip-compressed' || file.type !== 'application/zip') {
       message.error('只能上传zip格式的压缩文件，请重新上传');
       return false;
     }

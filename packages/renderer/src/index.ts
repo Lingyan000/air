@@ -10,6 +10,9 @@ import { useDesignSettingStore } from '/@/store/modules/designSetting';
 import { getConfig } from '/@/utils/events-impl';
 import 'viewerjs/dist/viewer.css';
 import VueViewer from 'v-viewer';
+import { useSocket } from '/@/hooks/socket';
+import VueLazyload from '@jambonn/vue-lazyload';
+import loadImage from '/@/assets/images/loading.png';
 
 async function bootstrap() {
   const appProvider = createApp(AppProvider);
@@ -29,6 +32,15 @@ async function bootstrap() {
   app.use(router);
 
   app.use(VueViewer);
+
+  app.use(VueLazyload, {
+    preLoad: 1.3,
+    loading: loadImage,
+    error: loadImage,
+    attempt: 1,
+  });
+
+  useSocket();
 
   app.mount('#app', true);
 }

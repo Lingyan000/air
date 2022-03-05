@@ -14,6 +14,7 @@ node_modules/**
 /bin
 Dockerfile
 packages/renderer/src/components.d.ts
+packages/main/types/global.d.ts
 packages/shared/types/global.d.ts
 tests/**
 packages/main/public/*

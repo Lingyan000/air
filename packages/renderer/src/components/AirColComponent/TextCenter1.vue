@@ -4,12 +4,16 @@
   import { airHomeComponentInjectionKey } from '/@/components/AirColComponent/interface';
   import { wrapTextToHtml, isCanWrapText } from '/@/utils/text';
 
-  const { titleRef } = inject(airHomeComponentInjectionKey)!;
+  const { titleRef, descRef } = inject(airHomeComponentInjectionKey)!;
 </script>
 
 <template>
   <n-element class="airHomeComponentCenterText1">
     <n-text v-html="wrapTextToHtml(titleRef, !isCanWrapText(titleRef))" />
+    <n-text
+      v-if="wrapTextToHtml(descRef, !isCanWrapText(descRef))"
+      v-html="wrapTextToHtml(descRef, !isCanWrapText(descRef))"
+    />
   </n-element>
 </template>
 

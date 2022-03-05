@@ -51,7 +51,8 @@ type ColType =
   | 'card_pic_2_2'
   | 'card_pic_2_2_left'
   | 'input'
-  | 'icon_1_search';
+  | 'icon_1_search'
+  | 'big_blank_block';
 
 type FyBaseUrlType = 'search' | 'home';
 

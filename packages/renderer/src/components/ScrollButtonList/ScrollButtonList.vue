@@ -2,7 +2,7 @@
   import { ref } from 'vue';
   import { NButton, NScrollbar, NSpace, NIcon, NModal } from 'naive-ui';
   import { ChevronForward as ChevronForwardIcon } from '@vicons/ionicons5';
-  import { removeHTMLTag } from '/@/utils';
+  import { wrapTextToHtml, isCanWrapText } from '/@/utils/text';
 
   interface Props {
     data: HikerResultOption[];
@@ -31,12 +31,12 @@
         <n-button
           v-for="(item, index) in data"
           :key="index"
-          :type="currentIndex === index ? 'primary' : 'default'"
           secondary
           size="small"
           @click="handleItemClick(item, index)"
-          >{{ removeHTMLTag(item.title) }}</n-button
         >
+          <n-text v-html="wrapTextToHtml(item.title, !isCanWrapText(item.title))"
+        /></n-button>
       </n-space>
     </n-scrollbar>
     <n-button secondary size="small" @click="showModal = true">
@@ -62,7 +62,6 @@
         <n-gi v-for="(item, index) in data" :key="index">
           <n-button
             style="width: 100%"
-            :type="currentIndex === index ? 'primary' : 'default'"
             secondary
             size="small"
             @click="
@@ -71,8 +70,9 @@
                 showModal = false;
               }
             "
-            >{{ removeHTMLTag(item.title) }}</n-button
           >
+            <n-text v-html="wrapTextToHtml(item.title, !isCanWrapText(item.title))"
+          /></n-button>
         </n-gi>
       </n-grid>
     </n-scrollbar>

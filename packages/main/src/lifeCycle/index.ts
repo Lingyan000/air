@@ -3,10 +3,11 @@ import ipcList from '/@/events/ipcList';
 import { URL } from 'url';
 import { IWindowList } from '#/types/enum';
 import windowManager from '/@/apis/app/window/windowManager';
-import server from '/@/server';
+import { Server } from '/@/server';
 import createProtocol from '/@/lifeCycle/createProtocol';
 import { protocol } from 'electron';
 import { importHikerFile } from '/@/apis/core/utils';
+import { setDefaultHeaders } from '/@/utils';
 
 const isDevelopment = import.meta.env.MODE === 'development';
 
@@ -23,7 +24,8 @@ class LifeCycle {
     protocol.registerSchemesAsPrivileged([
       { scheme: 'airr', privileges: { secure: true, standard: true } },
     ]);
-    server.start();
+    global.airServer = new Server();
+    await global.airServer.start();
     ipcList.listen();
   }
 
@@ -64,6 +66,8 @@ class LifeCycle {
           notice.show();
         }
       }
+
+      setDefaultHeaders();
 
       // dav.sync();
     };

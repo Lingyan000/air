@@ -2,6 +2,7 @@ import AirVm, { VmType } from './airVm';
 import AirParse from '/@/apis/core/air/parse';
 import { MessagePort } from 'worker_threads';
 import { cloneDeep } from 'lodash';
+import { REFRESH_PAGE } from '#/events/socket-constants';
 
 export interface IAirVmWorkerParams {
   port: MessagePort;
@@ -14,7 +15,7 @@ export interface IAirVmWorkerParams {
 }
 
 export default async (params: IAirVmWorkerParams) => {
-  const { code, vmType, documentsDir, ctx, sandbox = {}, rescode } = params;
+  const { port, code, vmType, documentsDir, ctx, sandbox = {}, rescode } = params;
 
   const airVm = new AirVm(
     vmType,
@@ -25,6 +26,12 @@ export default async (params: IAirVmWorkerParams) => {
     ctx,
     sandbox
   );
+
+  airVm.on(REFRESH_PAGE, () => {
+    port.postMessage({
+      ev: REFRESH_PAGE,
+    });
+  });
 
   try {
     const result = await airVm.vm?.run(code);

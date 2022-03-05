@@ -28,6 +28,9 @@
   import ScrollButton from './ScrollButton.vue';
   import LongText from './LongText.vue';
   import Pic2 from './Pic2.vue';
+  import Text4 from './Text4.vue';
+  import Line from './Line.vue';
+  import BigBlankBlock from './BigBlankBlock.vue';
 
   export default defineComponent({
     name: 'AirColComponent',
@@ -39,6 +42,7 @@
       text_3: Text3,
       text_2: Text2,
       text_1: Text1,
+      text_4: Text4,
       text_center_1: TextCenter1,
       movie_3: Movie3,
       movie_1_vertical_pic_blur: Movie1VerticalPicBlur,
@@ -55,6 +59,8 @@
       rich_text: RichText,
       scroll_button: ScrollButton,
       pic_2: Pic2,
+      line: Line,
+      big_blank_block: BigBlankBlock,
     },
 
     props: {

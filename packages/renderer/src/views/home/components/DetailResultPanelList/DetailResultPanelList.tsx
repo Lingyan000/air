@@ -1,5 +1,7 @@
 import { defineComponent, nextTick, ref } from 'vue';
 import DetailResultPanel from '/@/views/home/components/DetailResultPanel/DetailResultPanel.vue';
+import { useSocket } from '/@/hooks/socket';
+import { REFRESH_PAGE } from '#/events/socket-constants';
 
 export default defineComponent({
   name: 'DetailResultPanelList',
@@ -7,6 +9,8 @@ export default defineComponent({
   emits: ['clickItem'],
 
   setup(props, { emit }) {
+    const { socket } = useSocket();
+
     const detailResultPanelList = ref<any[]>([]);
 
     function close() {
@@ -16,8 +20,8 @@ export default defineComponent({
     function add() {
       const detailResultPanel: any = (
         <DetailResultPanel
-          onClickItem={(id, item) => {
-            emit('clickItem', id, item);
+          onClickItem={(id, item, prefix) => {
+            emit('clickItem', id, item, prefix);
           }}
           onClose={close}
         />
@@ -35,6 +39,9 @@ export default defineComponent({
         detailResultPanelList.value.length - 1
       ].component.exposed.refresh();
     }
+
+    // 监听刷新页面
+    socket.on(REFRESH_PAGE, refresh);
 
     return {
       add,

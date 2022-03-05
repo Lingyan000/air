@@ -12,6 +12,7 @@ import { isString } from '/@/utils/is/';
 import { setObjToUrlParams } from '/@/utils/urlUtils';
 
 import { RequestOptions } from './types';
+import { useSocket } from '/@/hooks/socket';
 
 const globSetting = useGlobSetting();
 const urlPrefix = globSetting.urlPrefix || '';
@@ -151,6 +152,8 @@ const transform: AxiosTransform = {
    * @description: 请求拦截器处理
    */
   requestInterceptors: (config) => {
+    const { id } = useSocket();
+    config.headers && (config.headers['socket-group-id'] = id);
     return config;
   },
 

@@ -23,7 +23,7 @@ export function checkStatus(status: number, msg: string, message: any): void {
       message.error('网络请求超时!');
       break;
     case 500:
-      message.error(msg || '服务器错误,请联系管理员!');
+      message.error(msg || '服务器错误,请联系开发者!');
       break;
     case 501:
       message.error('网络未实现!');

@@ -220,7 +220,10 @@ export function isImageUrl(url: string) {
 }
 
 export function isVideoUrl(url: string) {
-  return /\.(mp4|mov|m4v|webm|flv|wmv|avi|3gp|mkv|m3u8)(;{.*})?$/i.test(url);
+  return (
+    /\.(mp4|mov|m4v|webm|flv|wmv|avi|3gp|mkv|m3u8|)([;#]{.*})?$/i.test(url) ||
+    /.*#isVideo=true#.*/i.test(url)
+  );
 }
 
 export function isAudioUrl(url: string) {

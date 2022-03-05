@@ -19,6 +19,10 @@ export default function addHooks(fastify: FastifyInstance): void {
       return;
     }
 
+    if (request.headers['socket-group-id']) {
+      (request as any).session.socketGroupId = request.headers['socket-group-id'];
+    }
+
     const requestName = `${request.routerMethod} ${request.routerPath}`;
 
     const requestContext = {

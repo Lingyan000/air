@@ -2,7 +2,48 @@ import { DataTypes, Model } from 'sequelize';
 import sequelize from './sequelize';
 import dayjs from 'dayjs';
 
-class ArticleListRule extends Model {
+interface ArticleListRuleAttributes {
+  id: number;
+  title: string;
+  area_name: string;
+  area_url: string;
+  author: string;
+  chapter_find: string;
+  class_name: string;
+  class_url: string;
+  col_type: string;
+  detail_col_type: string;
+  detail_find_rule: string;
+  find_rule: string;
+  firstheader: string;
+  group_lpcolumn: string;
+  prerule: string;
+  sdetail_col_type: string;
+  sdetail_find_rule: string;
+  searchfind: string;
+  search_url: string;
+  sort_name: string;
+  sort_url: string;
+  titlecolor: string;
+  ua: string;
+  url: string;
+  version: number;
+  year_name: string;
+  year_url: string;
+  gmtcreate: number;
+  gmtmodified: number;
+  lastusetime: number;
+  last_chapter_rule: string;
+  pages: string;
+  storage: string;
+  icon: string;
+  type: string;
+}
+
+class ArticleListRule
+  extends Model<ArticleListRuleAttributes>
+  implements ArticleListRuleAttributes
+{
   id!: number;
   title!: string;
   area_name!: string;
@@ -30,13 +71,14 @@ class ArticleListRule extends Model {
   version!: number;
   year_name!: string;
   year_url!: string;
-  gmtcreate!: string;
-  gmtmodified!: string;
-  lastusetime!: string;
+  gmtcreate!: number;
+  gmtmodified!: number;
+  lastusetime!: number;
   last_chapter_rule!: string;
   pages!: string;
   storage!: string;
   icon!: string;
+  type!: string;
 }
 
 ArticleListRule.init(
@@ -229,12 +271,12 @@ ArticleListRule.init(
 );
 
 ArticleListRule.beforeCreate((record) => {
-  record.set('gmtcreate', dayjs().valueOf());
-  record.set('gmtmodified', dayjs().valueOf());
+  record.setDataValue('gmtcreate', dayjs().valueOf());
+  record.setDataValue('gmtmodified', dayjs().valueOf());
 });
 
 ArticleListRule.beforeUpdate((record) => {
-  record.set('gmtmodified', dayjs().valueOf());
+  record.setDataValue('gmtmodified', dayjs().valueOf());
 });
 
 ArticleListRule.sync({ alter: true });

@@ -20,6 +20,9 @@ import Piscina from 'piscina';
 import { MessageChannel } from 'worker_threads';
 import path from 'path';
 import { IAirVmWorkerParams } from '/@/apis/core/air/utils/airVmWorker';
+import * as socketConstList from '#/events/socket-constants';
+import validator from 'validator';
+import isURL = validator.isURL;
 
 const piscina = new Piscina({
   filename: path.resolve(__dirname, 'airVmWorker.cjs'),
@@ -63,6 +66,7 @@ class AirParse {
   allConfig: { [key: string]: { [key: string]: any } };
   config: { [key: string]: any };
   myVars: { [key: string]: any };
+  socketGroupId: string;
 
   constructor(
     articlelistrule: ArticleListRule,
@@ -71,6 +75,7 @@ class AirParse {
       allConfig: { [key: string]: { [key: string]: any } };
       vars: { [key: string]: any };
       allMyVars: { [key: string]: { [key: string]: any } };
+      socketGroupId: string;
     }
   ) {
     this.articlelistrule = articlelistrule;
@@ -81,6 +86,7 @@ class AirParse {
     this.allMyVars = data.allMyVars || {};
     this.myVars = this.allMyVars[this.articlelistrule.get('id')] || {};
     this.home = home;
+    this.socketGroupId = data.socketGroupId;
   }
 
   private setVmValue(vmData) {
@@ -105,7 +111,9 @@ class AirParse {
     const channel = new MessageChannel();
 
     channel.port2.on('message', (message) => {
-      console.log(message);
+      if (message.ev && Object.keys(socketConstList).includes(message.ev)) {
+        global.airServer?.fastify.io.to(this.socketGroupId).emit(message.ev, message.data);
+      }
     });
 
     const params: IAirVmWorkerParams = {
@@ -141,8 +149,11 @@ class AirParse {
 
   async parseCommon(config: IParseRuleConfig) {
     this.baseUrl = new URL(config.url).origin;
+    this.baseUrl = isURL(this.baseUrl)
+      ? this.baseUrl
+      : new URL(this.articlelistrule.getDataValue('url')).origin;
     this.myUrl = config.url + (config.params ? '?' + config.params : '');
-    // if (config.preParseCode) {
+    // if (config.preParseCode) {\
     //   const sandbox = await this.preParse(config.preParseCode);
     //   this.vars = Object.assign(this.vars, sandbox.AIR_VARS);
     // }
@@ -221,7 +232,15 @@ class AirParse {
   async parseLazyRule(config: IParseRuleConfig) {
     const isJs = isLazyJsCode(config.parseCode);
     if (isJs) {
-      return this.parseLazyJsResult(lazyCodeToJs(config.parseCode), config.input || '');
+      return this.parseLazyJsResult(
+        lazyCodeToJs(
+          config.parseCode.replace(
+            /e=VM2_INTERNAL_STATE_DO_NOT_USE_OR_PROGRAM_WILL_FAIL.handleException\(e\);/g,
+            ''
+          )
+        ),
+        config.input || ''
+      );
     } else {
       const got: Got = (await require('./esm-got.cjs')).default;
       await this.parseCommon(config);

@@ -9,6 +9,7 @@ export const GET_FILE_CONTENT = 'GET_FILE_CONTENT';
 export const WEBDAV_SYNC = 'WEBDAV_SYNC';
 export const AIR_OPEN_FILE = 'AIR_OPEN_FILE';
 export const IMPORT_BACKUP = 'IMPORT_BACKUP';
+export const SET_DEFAULT_HEADERS = 'SET_DEFAULT_HEADERS';
 
 /**
  * webview 使用

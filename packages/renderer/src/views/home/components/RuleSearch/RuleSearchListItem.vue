@@ -2,6 +2,7 @@
   import { NElement } from 'naive-ui';
   import { isHex } from '/@/utils';
   import ArticleListRule from '../../../../../../main/src/apis/core/database/sqlite/models/articlelistrule';
+  import loadImage from '/@/assets/svg/deadpool.svg';
 
   defineProps({
     data: {
@@ -33,7 +34,16 @@
     </template>
     <template v-else>
       <div class="homeRuleSearchListItem__icon">
-        <img :src="'air://' + data.icon" width="32" height="32" />
+        <img
+          v-lazy="{
+            src: 'air://' + data.icon,
+            loading: loadImage,
+            error: loadImage,
+          }"
+          class="tw-object-cover"
+          width="32"
+          height="32"
+        />
       </div>
     </template>
     <div class="homeRuleSearchListItem__itemText tw-ml-sm"> {{ data.title }}</div>

@@ -4,8 +4,8 @@ import registerHooks from './hooks';
 import registerPlugins from '/@/server/plugins';
 import { RouteOptions } from 'fastify/types/route';
 
-class Server {
-  private readonly fastify: FastifyInstance;
+export class Server {
+  public readonly fastify: FastifyInstance;
   private port = 52020;
 
   constructor() {
@@ -23,6 +23,18 @@ class Server {
       return { hello: 'world' };
     });
 
+    this.fastify.ready((err) => {
+      if (err) {
+        throw err;
+      }
+      this.fastify.io.on('connect', (socket) => {
+        socket.on('addGroup', (id) => {
+          socket.join(id);
+        });
+        console.info('Socket connected!', socket.id);
+      });
+    });
+
     this.fastify.after(() => {
       for (const getRoute of routes) {
         this.fastify.route(getRoute() as RouteOptions);
@@ -34,5 +46,3 @@ class Server {
     });
   }
 }
-
-export default new Server();

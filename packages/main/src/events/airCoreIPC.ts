@@ -10,7 +10,7 @@ import { ipcMain, IpcMainEvent, shell, IpcMainInvokeEvent } from 'electron';
 import air from '/@/apis/core/air';
 import path from 'path';
 import fs from 'fs-extra';
-import dav from '/@/apis/core/air/dav';
+import Dav from '/@/apis/core/air/dav';
 import { dbPathChecker } from '/@/apis/core/datastore/dbChecker';
 import { importBackup } from '/@/apis/core/utils';
 
@@ -44,8 +44,8 @@ const handleGetFileContent = () => {
 
 const handleWebdav = () => {
   ipcMain.handle(WEBDAV_SYNC, async () => {
-    const result = await dav.sync();
-    return result;
+    const dav = new Dav();
+    return dav.sync();
   });
 };
 

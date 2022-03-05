@@ -14,7 +14,7 @@
   const artilelistruleListMap = computed(() => artilelistruleStore.listMap);
 
   const emit = defineEmits<{
-    (e: 'clickItem', id: number, item: HikerResultOption): void;
+    (e: 'clickItem', id: number, item: HikerResultOption, prefix?: string): void;
     (e: 'close'): void;
   }>();
 
@@ -110,7 +110,7 @@
   }
 
   function handleItemClick(item: HikerResultOption) {
-    emit('clickItem', idRef.value!, item);
+    emit('clickItem', idRef.value!, item, titleRef.value);
   }
 
   function refresh() {

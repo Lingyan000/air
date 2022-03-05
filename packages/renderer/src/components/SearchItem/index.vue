@@ -1,14 +1,7 @@
 <template>
   <n-card class="searchItem" content-style="display: flex;" hoverable>
     <div v-show="image" class="searchItem__left">
-      <n-image
-        class="searchItem__image"
-        :src="'air://' + image"
-        object-fit="cover"
-        preview-disabled
-        alt=""
-        :fallback-src="imgError"
-      />
+      <img v-lazy="'air://' + image" class="searchItem__image tw-object-cover" />
     </div>
     <div class="searchItem__right tw-pl-sm">
       <n-ellipsis
@@ -44,14 +37,13 @@
 
 <script lang="ts">
   import { defineComponent } from 'vue';
-  import { NImage, NCard, NElement } from 'naive-ui';
+  import { NCard, NElement } from 'naive-ui';
   import imgError from '~assets/svg/imgError.svg';
 
   export default defineComponent({
     name: 'SearchItem',
 
     components: {
-      NImage,
       NCard,
       NElement,
     },

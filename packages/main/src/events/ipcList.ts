@@ -5,8 +5,10 @@ import {
   IS_MAXIMIZE_WINDOW,
   MAX_RESTORE_WINDOW,
   MINIMIZE_WINDOW,
+  SET_DEFAULT_HEADERS,
   UPDATE_REQUEST_HEADERS,
 } from '#/events/constants';
+import { setDefaultHeaders } from '/@/utils';
 
 export default {
   listen() {
@@ -55,6 +57,10 @@ export default {
         notification.show();
         throw new Error(e);
       }
+    });
+
+    ipcMain.on(SET_DEFAULT_HEADERS, () => {
+      setDefaultHeaders();
     });
   },
   dispose() {},

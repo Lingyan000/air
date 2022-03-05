@@ -4,6 +4,7 @@ import fastifyCorsor from 'fastify-cors';
 import fastifyCookie from 'fastify-cookie';
 import fastifyCaching from 'fastify-caching';
 import fastifyServerSession from 'fastify-server-session';
+import fastifySocketio from 'fastify-socket.io';
 
 const SESSION_TTL = 86400; // 1 day in seconds
 
@@ -17,6 +18,14 @@ export default async function registerPlugins(fastify: FastifyInstance): Promise
     // put your options here
     origin: true,
     credentials: true,
+  });
+
+  await fastify.register(fastifySocketio, {
+    cors: {
+      // put your options here
+      origin: true,
+      credentials: true,
+    },
   });
 
   await fastify.register(fastifyCookie);

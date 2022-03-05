@@ -126,6 +126,7 @@
             padding: '0',
           }"
           :animated="false"
+          display-directive="show"
         >
           <template #default>
             <div class="homeAirSearch__content">

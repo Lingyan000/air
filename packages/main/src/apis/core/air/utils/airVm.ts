@@ -3,13 +3,17 @@ import { VM, VMOptions, VMScript } from 'vm2';
 import { Headers, Method } from 'got';
 import fs, { readFileSync } from 'fs-extra';
 import { join } from 'path';
-import { isObject, wrap } from 'lodash';
+import { cloneDeep, isObject, wrap } from 'lodash';
 import AirParse from '/@/apis/core/air/parse';
 import { isPath, parseDomRes, PrivateJsDecode } from '/@/apis/core/air/utils/index';
 import { createSyncFn } from 'synckit';
 import { URL } from 'url';
 import CryptoJS from 'crypto-js';
-import { PC_UA } from '#/parse/constants';
+import { MOBILE_UA, PC_UA } from '#/parse/constants';
+import { EventEmitter } from 'events';
+import { REFRESH_PAGE } from '#/events/socket-constants';
+import validator from 'validator';
+import isJSON = validator.isJSON;
 
 const vmScript = join(__dirname, './vm/script.js');
 const vmHikerurl = join(__dirname, './vm/Hikerurl.js');
@@ -22,12 +26,14 @@ export interface AirVmParams {
 }
 
 export interface FetchConfig {
-  headers: Headers;
+  headers?: Headers;
   body?: any;
-  method: Method;
+  method?: Method;
+  timeout?: number;
+  toHex?: boolean;
 }
 
-export default class AirVm {
+export default class AirVm extends EventEmitter {
   public rescode: any;
   public vm: VM | undefined;
   public vmType: VmType;
@@ -35,6 +41,12 @@ export default class AirVm {
   public result: any = { data: [] };
   public ctx: typeof AirParse.prototype;
   public documentsDir: string;
+  private syncFetch = createSyncFn(require.resolve('./worker/fetch'), {
+    timeout: 30000,
+  });
+  private syncFetchCookie = createSyncFn(require.resolve('./worker/fetchCookie'), {
+    timeout: 30000,
+  });
 
   constructor(
     vmType: VmType,
@@ -42,6 +54,7 @@ export default class AirVm {
     ctx: typeof AirParse.prototype,
     sandbox: any = {}
   ) {
+    super();
     this.ctx = ctx;
     const { rescode, documentsDir } = params;
     this.documentsDir = documentsDir;
@@ -67,7 +80,7 @@ export default class AirVm {
     return url;
   }
 
-  getSandbox() {
+  private getSandbox() {
     switch (this.vmType) {
       case 'homeIn':
         return this.getHomeSandbox();
@@ -80,7 +93,7 @@ export default class AirVm {
     }
   }
 
-  getBaseSandbox() {
+  private getBaseSandbox() {
     return {
       config: this.ctx.config,
       pd: this.parseDom,
@@ -97,15 +110,16 @@ export default class AirVm {
       AIR_RESCODE: this.rescode,
       writeFile: this.writeFile,
       MY_URL: this.ctx.myUrl,
-      eval: this.eval,
+      // eval: this.eval,
       evalPrivateJS: this.evalPrivateJS,
       log: console.log,
       base64Encode: this.base64Encode,
       base64Decode: this.base64Decode,
       CryptoJS: CryptoJS,
       request: this.fetch,
-      refreshPage: this.refreshPage,
+      refreshPage: this.refreshPage, // 刷新页面
       PC_UA: PC_UA,
+      MOBILE_UA: MOBILE_UA,
       require: this.require,
       deleteCache: this.deleteCache,
       MY_RULE: this.ctx.articlelistrule,
@@ -129,39 +143,41 @@ export default class AirVm {
       setPageTitle: () => {}, // TODO
       setLastChapterRule: this.setLastChapterRule, // TODO
       showLoading: this.showLoading, // TODO
-      addListener: this.addListener, // TODO
+      addListener: this._addListener, // TODO
       getUrl: this.getUrl,
+      MY_HOME: (this.ctx.articlelistrule as any).dataValues,
+      getPath: this.getPath,
     };
   }
 
-  eval = wrap(this, (that, value: string) => {
+  private getHomeSandbox() {
+    return {
+      ...this.getBaseSandbox(),
+    };
+  }
+
+  private getSearchSandbox() {
+    return {
+      ...this.getBaseSandbox(),
+    };
+  }
+
+  private getPreSandbox() {
+    return {
+      ...this.getBaseSandbox(),
+    };
+  }
+
+  private eval = wrap(this, (that, value: string) => {
     if (typeof value === 'string') that.vm?.run(value);
   });
 
-  getHomeSandbox() {
-    return {
-      ...this.getBaseSandbox(),
-    };
-  }
-
-  getSearchSandbox() {
-    return {
-      ...this.getBaseSandbox(),
-    };
-  }
-
-  getPreSandbox() {
-    return {
-      ...this.getBaseSandbox(),
-    };
-  }
-
-  parseDom = wrap(this, (that, html: string, code: string) => {
+  private parseDom = wrap(this, (that, html: string, code: string) => {
     const value = that.parseDomForHtml(html, code);
     return value && isPath(value) ? that.urlWrap(value) : value;
   });
 
-  parseDomForHtml(html: string, code: string) {
+  private parseDomForHtml(html: string, code: string) {
     if (!code || !html) return '';
     const codeSp = code.split('&&');
     const parsing = {
@@ -175,7 +191,7 @@ export default class AirVm {
     return parseDomRes(cNode, parsing);
   }
 
-  parseDomForArray(html: string, code: string) {
+  private parseDomForArray(html: string, code: string) {
     const selectorArr = code.split('&&');
 
     const $ = cheerio.load(html);
@@ -198,31 +214,34 @@ export default class AirVm {
     return arr;
   }
 
-  fetch = wrap<this, any, string>(this, (that, reqUrl: string, config: FetchConfig) => {
-    if (reqUrl.startsWith('hiker://')) {
-      const url = new URL(reqUrl);
-      switch (url.host) {
-        case 'page':
-          const page = that.ctx.pages.find((page) => page.path === url.pathname.slice(1));
-          if (!page) throw new Error('page not found');
-          return JSON.stringify(page);
-        case 'files':
-          const filePath = join(that.documentsDir, decodeURIComponent(url.pathname));
-          if (!fs.existsSync(filePath)) return '';
-          return readFileSync(filePath).toString();
-        case 'home':
-          return JSON.stringify(that.ctx.home);
+  private fetch = wrap<this, any, string>(
+    this,
+    (that, reqUrl: string, config: FetchConfig = {}) => {
+      if (reqUrl.startsWith('hiker://')) {
+        const url = new URL(reqUrl);
+        switch (url.host) {
+          case 'page':
+            const page = that.ctx.pages.find((page) => page.path === url.pathname.slice(1));
+            if (!page) throw new Error('page not found');
+            return JSON.stringify(page);
+          case 'files':
+            const filePath = join(that.documentsDir, decodeURIComponent(url.pathname));
+            if (!fs.existsSync(filePath)) return '';
+            return readFileSync(filePath).toString();
+          case 'home':
+            return JSON.stringify(that.ctx.home);
+        }
+        return;
       }
-      return;
+      return that.syncFetch(reqUrl, cloneDeep(config));
     }
-    return createSyncFn(require.resolve('./worker/fetch'))(reqUrl, JSON.stringify(config));
+  );
+
+  private fetchCookie = wrap<this, any, string>(this, (that, url, config: FetchConfig) => {
+    return that.syncFetch(require.resolve('./worker/fetchCookie'))(url, cloneDeep(config));
   });
 
-  fetchCookie(url, config: FetchConfig) {
-    return createSyncFn(require.resolve('./worker/fetchCookie'))(url, JSON.stringify(config));
-  }
-
-  writeFile = wrap(this, (that, fileUrl: string, content: string) => {
+  private writeFile = wrap(this, (that, fileUrl: string, content: string) => {
     if (!fileUrl.startsWith('hiker://files')) {
       throw new Error('fileUrl must start with hiker://files');
     }
@@ -236,7 +255,7 @@ export default class AirVm {
     fs.writeFileSync(filePath, content);
   });
 
-  evalPrivateJS = wrap<this, string, any>(this, (that, code) => {
+  private evalPrivateJS = wrap<this, string, any>(this, (that, code) => {
     return that.vm?.run(PrivateJsDecode(code));
   });
 
@@ -244,7 +263,7 @@ export default class AirVm {
    * base64编码
    * @param src
    */
-  base64Encode(src: string) {
+  private base64Encode(src: string) {
     return CryptoJS.enc.Utf8.parse(src).toString(CryptoJS.enc.Base64);
   }
 
@@ -252,19 +271,20 @@ export default class AirVm {
    * base64解码
    * @param src
    */
-  base64Decode(src: string) {
+  private base64Decode(src: string) {
     return CryptoJS.enc.Base64.parse(src).toString(CryptoJS.enc.Utf8);
   }
 
-  refreshPage = wrap(this, (that) => {
+  private refreshPage = wrap(this, (that) => {
+    that.emit(REFRESH_PAGE);
     that.ctx.isRefreshPage = true;
   });
 
-  md5(str: string) {
+  private md5(str: string) {
     return CryptoJS.MD5(str).toString();
   }
 
-  jsWrap(js) {
+  private jsWrap(js) {
     return js;
     // return (
     //   '(async function () {' +
@@ -286,30 +306,63 @@ export default class AirVm {
    * "删除本地缓存、强制更新：deleteCache('http://xxx/t.js')，删除缓存到本地的文件，再次执行require则会重新下载"
    * @param url
    */
-  require = wrap(this, (that, url: string) => {
-    const fileName = that.md5(url);
-    const filePath = join(that.documentsDir, './requires/' + fileName);
-    if (!fs.existsSync(filePath)) {
-      fs.ensureFileSync(filePath);
-      const content = that.fetch(url);
-      fs.writeFileSync(filePath, content);
-    }
-    that.vm?.runFile(filePath);
-  });
+  private require = wrap<this, any, void>(
+    this,
+    (
+      that,
+      url: string,
+      data = {
+        headers: {},
+      },
+      version = 0
+    ) => {
+      const fileName = that.md5(url);
+      const configPath = join(that.documentsDir, './libs/' + fileName + '.json');
+      const filePath = join(that.documentsDir, './libs/' + fileName + '.js');
+      if (!fs.existsSync(configPath)) {
+        fs.ensureFileSync(configPath);
+        const content = JSON.stringify({
+          version,
+          url,
+        });
+        fs.writeFileSync(configPath, content);
+      }
 
-  deleteCache = wrap(this, (that, url: string) => {
+      // 升级版本号
+      const configTxt = fs.readFileSync(configPath, 'utf-8');
+      if (isJSON(configTxt)) {
+        const config = JSON.parse(configTxt);
+        if (config.version != version) {
+          fs.rmSync(filePath);
+          config.version = version;
+          fs.writeFileSync(configPath, JSON.stringify(config));
+        }
+      }
+
+      if (!fs.existsSync(filePath)) {
+        fs.ensureFileSync(filePath);
+        const content = that.fetch(url, {
+          headers: data.headers,
+        });
+        fs.writeFileSync(filePath, content);
+      }
+      that.vm?.runFile(filePath);
+    }
+  );
+
+  private deleteCache = wrap(this, (that, url: string) => {
     const fileName = that.md5(url);
-    const filePath = join(that.documentsDir, './requires/' + fileName);
+    const filePath = join(that.documentsDir, './libs/' + fileName + '.js');
     if (fs.existsSync(filePath)) {
       return fs.rmSync(filePath);
     }
   });
 
-  getCryptoJS() {
+  private getCryptoJS() {
     return fs.readFileSync(join(__dirname, './static/crypto-js.min.js'));
   }
 
-  fileExist = wrap(this, (that, fileUrl: string) => {
+  private fileExist = wrap(this, (that, fileUrl: string) => {
     if (!fileUrl.startsWith('hiker://files')) {
       throw new Error('fileUrl must start with hiker://files');
     }
@@ -319,21 +372,21 @@ export default class AirVm {
     return fs.existsSync(filePath);
   });
 
-  setError(message) {
+  private setError(message) {
     console.error(message);
     throw new Error(message);
   }
 
-  initConfig = wrap(this, (that, config: any) => {
+  private initConfig = wrap(this, (that, config: any) => {
     that.ctx.config = { ...that.ctx.config, ...config };
-    that.ctx.allConfig[that.ctx.articlelistrule.id] = that.ctx.config;
+    that.ctx.allConfig[(that.ctx.articlelistrule as any).dataValues.id] = that.ctx.config;
   });
 
-  getVar = wrap(this, (that, key: string, defaultValue: string) => {
+  private getVar = wrap(this, (that, key: string, defaultValue: string) => {
     return that.ctx.vars[key] || defaultValue;
   });
 
-  putVar = wrap<this, any, void>(
+  private putVar = wrap<this, any, void>(
     this,
     (that, key: string | { key: string; value: string }, value: string) => {
       if (isObject(key)) {
@@ -344,39 +397,49 @@ export default class AirVm {
     }
   );
 
-  clearVar = wrap(this, (that, key: string) => {
+  private clearVar = wrap(this, (that, key: string) => {
     if (that.ctx.vars[key]) {
       delete this.ctx.vars[key];
     }
   });
 
-  putMyVar = wrap(this, (that, key: string, value: string) => {
+  private putMyVar = wrap(this, (that, key: string, value: string) => {
     that.ctx.myVars[key] = value;
-    that.ctx.allMyVars[that.ctx.articlelistrule.id] = that.ctx.myVars[key];
+    that.ctx.allMyVars[(that.ctx.articlelistrule as any).dataValues.id] = that.ctx.myVars;
   });
 
-  getMyVar = wrap(this, (that, key: string, defaultValue: string) => {
+  private getMyVar = wrap(this, (that, key: string, defaultValue: string) => {
     return that.ctx.myVars[key] || defaultValue;
   });
 
-  clearMyVar = wrap(this, (that, key: string) => {
+  private clearMyVar = wrap(this, (that, key: string) => {
     if (that.ctx.myVars[key]) {
       delete this.ctx.myVars[key];
     }
   });
 
-  requireCache = wrap<this, any, void>(this, (that, url: string, hour: number) => {
+  private requireCache = wrap<this, any, void>(this, (that, url: string, hour: number) => {
     console.log(hour);
     that.require(url);
   });
 
-  getUrl = wrap(this, (that) => {
+  private getUrl = wrap(this, (that) => {
     return that.ctx.myUrl;
   });
 
-  setLastChapterRule() {}
+  private setLastChapterRule() {}
 
-  showLoading() {}
+  private showLoading() {}
 
-  addListener() {}
+  private _addListener() {}
+
+  private getPath = wrap(this, (that, url: string) => {
+    if (url.startsWith('hiker://files')) {
+      const urlObj = new URL(url);
+      const path = decodeURIComponent(urlObj.pathname);
+      return join(that.documentsDir, path);
+    } else {
+      return url;
+    }
+  });
 }

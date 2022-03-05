@@ -1,9 +1,8 @@
 // const iconv = require('iconv-lite');
 const { runAsWorker } = require('synckit');
 
-runAsWorker(async (url, config = '{}') => {
+runAsWorker(async (url, config = {}) => {
   const got = (await require('../esm-got.cjs')).default;
-  config = JSON.parse(config);
   const instance = got.extend({ followRedirect: config.redirect !== false });
   return instance(url, {
     headers: {
@@ -13,9 +12,13 @@ runAsWorker(async (url, config = '{}') => {
     },
     method: config.method || 'GET',
     body: config.body,
+    responseType: config.toHex ? 'buffer' : 'text',
   }).then((response) => {
     // const data = iconv.decode(response, 'utf-8');
-    const body = response.body;
+    let body = response.body;
+    if (config.toHex) {
+      body = Buffer.from(body).toString('hex');
+    }
     if (config.withStatusCode) {
       return JSON.stringify({
         body,

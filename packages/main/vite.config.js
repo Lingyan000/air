@@ -94,6 +94,7 @@ const config = {
         'piscina',
         'electron-window-state',
         'validator',
+        'fastify-socket.io',
         ...builtinModules,
       ],
       output: {

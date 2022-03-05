@@ -6,7 +6,6 @@
   import Artplayer from 'artplayer';
   import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 
-  // eslint-disable-next-line vue/no-setup-props-destructure
   const { option } = defineProps<{
     option: any;
   }>();
@@ -32,5 +31,9 @@
     if (instance.value && instance.value.destroy) {
       instance.value.destroy();
     }
+  });
+
+  defineExpose({
+    instance,
   });
 </script>
