@@ -41,8 +41,14 @@ export class Server {
       }
     });
 
-    this.fastify.listen(this.port, () => {
-      console.log(`Air app listening at http://localhost:${this.port}`);
+    return new Promise((resolve, reject) => {
+      this.fastify.listen(this.port, (err, address) => {
+        if (err) {
+          reject(err);
+        }
+        console.log(`Air app listening at http://localhost:${this.port}`);
+        resolve(address);
+      });
     });
   }
 }

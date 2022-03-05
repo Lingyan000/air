@@ -27,7 +27,7 @@ export class CloudShearPlate {
 
   private getCloud2(): Promise<string> {
     return axios
-      .get('https://netcut.cn/api/note/data/?note_id=' + this.url.split('/p/')[1])
+      .get('http://netcut.cn/api/note/data/?note_id=' + this.url.split('/p/')[1])
       .then((res) => {
         if (res.data.error) throw new Error(res.data.error);
         if (res.data && res.data.data) {
