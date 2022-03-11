@@ -17,10 +17,13 @@
   import { isArray } from 'lodash';
   import { displayColType } from '/@/views/home/options';
   import ImportRule from '/@/views/home/components/ImportRule/ImportRule.vue';
+  import { useSocket } from '/@/hooks/socket';
+  import { HIDE_LOADING, SHOW_LOADING } from '#/events/socket-constants';
 
   const artilelistruleStore = useArtilelistruleStore();
   const message = useMessage();
   const currentInstance = getCurrentInstance();
+  const { socket } = useSocket();
 
   const { $viewerApi: viewerApi } = currentInstance?.appContext.config.globalProperties as any;
 
@@ -229,6 +232,16 @@
     getList();
   }
 
+  function socketListen() {
+    socket.on(SHOW_LOADING, (text: string) => {
+      showLoading(text);
+    });
+
+    socket.on(HIDE_LOADING, () => {
+      hideLoading();
+    });
+  }
+
   provide(homeInjectionKey, {
     activeNameRef: activeName,
     ruleListRef: ruleList,
@@ -236,6 +249,7 @@
   });
 
   getList();
+  socketListen();
 </script>
 
 <template>

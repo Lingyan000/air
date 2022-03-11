@@ -5,13 +5,18 @@ import fs, { readFileSync } from 'fs-extra';
 import { join } from 'path';
 import { cloneDeep, isObject, wrap } from 'lodash';
 import AirParse from '/@/apis/core/air/parse';
-import { isPath, parseDomRes, PrivateJsDecode } from '/@/apis/core/air/utils/index';
-import { createSyncFn } from 'synckit';
+import {
+  isPath,
+  parseDomRes,
+  PrivateJsDecode,
+  PrivateJsEncrypt,
+} from '/@/apis/core/air/utils/index';
+import { createSyncFn } from 'sync-threads';
 import { URL } from 'url';
 import CryptoJS from 'crypto-js';
 import { MOBILE_UA, PC_UA } from '#/parse/constants';
 import { EventEmitter } from 'events';
-import { REFRESH_PAGE } from '#/events/socket-constants';
+import { HIDE_LOADING, REFRESH_PAGE, SHOW_LOADING } from '#/events/socket-constants';
 import validator from 'validator';
 import isJSON = validator.isJSON;
 
@@ -41,12 +46,8 @@ export default class AirVm extends EventEmitter {
   public result: any = { data: [] };
   public ctx: typeof AirParse.prototype;
   public documentsDir: string;
-  private syncFetch = createSyncFn(require.resolve('./worker/fetch'), {
-    timeout: 30000,
-  });
-  private syncFetchCookie = createSyncFn(require.resolve('./worker/fetchCookie'), {
-    timeout: 30000,
-  });
+  private syncFetch = createSyncFn(require.resolve('./worker/fetch'), 1024 * 1024);
+  private syncFetchCookie = createSyncFn(require.resolve('./worker/fetchCookie'), 1024 * 1024);
 
   constructor(
     vmType: VmType,
@@ -111,6 +112,7 @@ export default class AirVm extends EventEmitter {
       writeFile: this.writeFile,
       MY_URL: this.ctx.myUrl,
       // eval: this.eval,
+      getPrivateJS: this.getPrivateJS,
       evalPrivateJS: this.evalPrivateJS,
       log: console.log,
       base64Encode: this.base64Encode,
@@ -143,6 +145,7 @@ export default class AirVm extends EventEmitter {
       setPageTitle: () => {}, // TODO
       setLastChapterRule: this.setLastChapterRule, // TODO
       showLoading: this.showLoading, // TODO
+      hideLoading: this.hideLoading,
       addListener: this._addListener, // TODO
       getUrl: this.getUrl,
       MY_HOME: (this.ctx.articlelistrule as any).dataValues,
@@ -217,28 +220,33 @@ export default class AirVm extends EventEmitter {
   private fetch = wrap<this, any, string>(
     this,
     (that, reqUrl: string, config: FetchConfig = {}) => {
-      if (reqUrl.startsWith('hiker://')) {
-        const url = new URL(reqUrl);
-        switch (url.host) {
-          case 'page':
-            const page = that.ctx.pages.find((page) => page.path === url.pathname.slice(1));
-            if (!page) throw new Error('page not found');
-            return JSON.stringify(page);
-          case 'files':
-            const filePath = join(that.documentsDir, decodeURIComponent(url.pathname));
-            if (!fs.existsSync(filePath)) return '';
-            return readFileSync(filePath).toString();
-          case 'home':
-            return JSON.stringify(that.ctx.home);
+      try {
+        if (reqUrl.startsWith('hiker://')) {
+          const url = new URL(reqUrl);
+          switch (url.host) {
+            case 'page':
+              const page = that.ctx.pages.find((page) => page.path === url.pathname.slice(1));
+              if (!page) throw new Error('page not found');
+              return JSON.stringify(page);
+            case 'files':
+              const filePath = join(that.documentsDir, decodeURIComponent(url.pathname));
+              if (!fs.existsSync(filePath)) return '';
+              return readFileSync(filePath).toString();
+            case 'home':
+              return JSON.stringify(that.ctx.home);
+          }
+          return;
         }
-        return;
+        const syncFetch = createSyncFn(require.resolve('./worker/fetch'), 1024 * 1024);
+        return syncFetch({ url: reqUrl, config: cloneDeep(config) });
+      } catch (e) {
+        console.error(e);
       }
-      return that.syncFetch(reqUrl, cloneDeep(config));
     }
   );
 
   private fetchCookie = wrap<this, any, string>(this, (that, url, config: FetchConfig) => {
-    return that.syncFetch(require.resolve('./worker/fetchCookie'))(url, cloneDeep(config));
+    return that.syncFetchCookie({ url, config: cloneDeep(config) });
   });
 
   private writeFile = wrap(this, (that, fileUrl: string, content: string) => {
@@ -255,8 +263,12 @@ export default class AirVm extends EventEmitter {
     fs.writeFileSync(filePath, content);
   });
 
+  private getPrivateJS(code: string) {
+    return PrivateJsEncrypt(code);
+  }
+
   private evalPrivateJS = wrap<this, string, any>(this, (that, code) => {
-    return that.vm?.run(PrivateJsDecode(code));
+    return that.vm?.run(PrivateJsDecode(code).replace(/let\s/g, 'var '));
   });
 
   /**
@@ -275,6 +287,10 @@ export default class AirVm extends EventEmitter {
     return CryptoJS.enc.Base64.parse(src).toString(CryptoJS.enc.Utf8);
   }
 
+  /**
+   * 刷新页面
+   * @private
+   */
   private refreshPage = wrap(this, (that) => {
     that.emit(REFRESH_PAGE);
     that.ctx.isRefreshPage = true;
@@ -340,10 +356,10 @@ export default class AirVm extends EventEmitter {
       }
 
       if (!fs.existsSync(filePath)) {
-        fs.ensureFileSync(filePath);
         const content = that.fetch(url, {
           headers: data.headers,
         });
+        fs.ensureFileSync(filePath);
         fs.writeFileSync(filePath, content);
       }
       that.vm?.runFile(filePath);
@@ -382,7 +398,7 @@ export default class AirVm extends EventEmitter {
     that.ctx.allConfig[(that.ctx.articlelistrule as any).dataValues.id] = that.ctx.config;
   });
 
-  private getVar = wrap(this, (that, key: string, defaultValue: string) => {
+  private getVar = wrap(this, (that, key: string, defaultValue = '') => {
     return that.ctx.vars[key] || defaultValue;
   });
 
@@ -429,7 +445,13 @@ export default class AirVm extends EventEmitter {
 
   private setLastChapterRule() {}
 
-  private showLoading() {}
+  private showLoading = wrap(this, (that, title: string) => {
+    that.emit(SHOW_LOADING, title);
+  });
+
+  private hideLoading = wrap(this, (that) => {
+    that.emit(HIDE_LOADING);
+  });
 
   private _addListener() {}
 

@@ -3,7 +3,7 @@
 </template>
 
 <style>
-  .air-col-blank-block {
+  .air-col-big-blank-block {
     width: 100%;
     height: 2vw;
   }

@@ -1,7 +1,7 @@
 // const iconv = require('iconv-lite');
-const { runAsWorker } = require('synckit');
+const { runAsWorker } = require('sync-threads');
 
-runAsWorker(async (url, config = {}) => {
+runAsWorker(async ({ url, config = {} }) => {
   const got = (await require('../esm-got.cjs')).default;
   const instance = got.extend({ followRedirect: config.redirect !== false });
   return instance(url, {

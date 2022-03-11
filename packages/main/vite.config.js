@@ -95,6 +95,7 @@ const config = {
         'electron-window-state',
         'validator',
         'fastify-socket.io',
+        'sync-threads',
         ...builtinModules,
       ],
       output: {

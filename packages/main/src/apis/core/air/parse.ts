@@ -112,7 +112,7 @@ class AirParse {
 
     channel.port2.on('message', (message) => {
       if (message.ev && Object.keys(socketConstList).includes(message.ev)) {
-        global.airServer?.fastify.io.to(this.socketGroupId).emit(message.ev, message.data);
+        global.airServer?.fastify.io.to(this.socketGroupId).emit(message.ev, ...message.data);
       }
     });
 

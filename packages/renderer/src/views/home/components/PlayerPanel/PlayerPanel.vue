@@ -165,7 +165,7 @@
 
   watch(activeRef, (v) => {
     if (!v) {
-      document.exitPictureInPicture();
+      document.pictureInPictureElement && document.exitPictureInPicture();
       isNeedSetHeader.value = false;
       filter.value.urls = [];
       api.send(SET_DEFAULT_HEADERS);

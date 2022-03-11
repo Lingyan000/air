@@ -1,14 +1,14 @@
 import { session } from 'electron';
-import { URL } from 'url';
 
 export function setDefaultHeaders() {
   const filter = {
-    urls: ['*://*:*/*'],
+    urls: ['*://*/*'],
   };
   session.defaultSession.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
-    const url = new URL(details.url);
-    details.requestHeaders['Origin'] = url.origin;
-    details.requestHeaders['Referer'] = details.url;
+    // @ts-ignore
+    details.requestHeaders['Origin'] = undefined;
+    // @ts-ignore
+    details.requestHeaders['Referer'] = undefined;
     callback({ cancel: false, requestHeaders: details.requestHeaders });
   });
 }

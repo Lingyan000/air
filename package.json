@@ -160,6 +160,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.5.2",
     "sanitize-html": "^2.7.0",
+    "seemly": "^0.3.3",
     "sequelize": "^6.17.0",
     "sequelize-typescript": "^2.1.2",
     "socket.io": "^4.4.1",
@@ -180,7 +181,8 @@
     "vue": "^3.2.29",
     "vue-element-loading": "^3.0.1",
     "vue-router": "^4.0.12",
-    "vueuc": "^0.4.19",
+    "vue-virtual-scroll-grid": "^1.4.0",
+    "vueuc": "^0.4.27",
     "webdav": "^4.8.0",
     "xregexp": "^5.1.0"
   },

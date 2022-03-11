@@ -4,6 +4,7 @@ import { NIcon, NTag } from 'naive-ui';
 import { PageEnum } from '/@/enums/pageEnum';
 import { isObject } from './is/index';
 import { cloneDeep } from 'lodash-es';
+import { nanoid } from 'nanoid';
 
 /**
  * render 图标
@@ -268,11 +269,18 @@ export function isHlsUrl(url: string) {
   return /\.m3u8$/i.test(url);
 }
 
-export function removeHTMLTag(str: string): string {
-  str = str.replace(/<\/?[^>]*>/g, ''); //去除HTML tag
-  str = str.replace(/[ | ]*\n/g, '\n'); //去除行尾空白
-  str = str.replace(/ /gi, ''); //去掉
-  str = str.replace(/[“”‘’]/g, '');
+export function spliteArray<T>(arr: T[], size: number) {
+  const arrays: {
+    id: string;
+    chunk: T[];
+  }[] = [];
+  while (arr.length > 0) {
+    const chunk = arr.splice(0, size);
 
-  return str;
+    arrays.push({
+      id: nanoid(),
+      chunk,
+    });
+  }
+  return arrays;
 }

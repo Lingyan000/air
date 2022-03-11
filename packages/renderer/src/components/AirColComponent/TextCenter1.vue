@@ -9,8 +9,8 @@
 
 <template>
   <n-element class="airHomeComponentCenterText1">
-    <n-text v-html="wrapTextToHtml(titleRef, !isCanWrapText(titleRef))" />
-    <n-text
+    <div v-html="wrapTextToHtml(titleRef, !isCanWrapText(titleRef))" />
+    <div
       v-if="wrapTextToHtml(descRef, !isCanWrapText(descRef))"
       v-html="wrapTextToHtml(descRef, !isCanWrapText(descRef))"
     />

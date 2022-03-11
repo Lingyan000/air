@@ -2,7 +2,7 @@ import AirVm, { VmType } from './airVm';
 import AirParse from '/@/apis/core/air/parse';
 import { MessagePort } from 'worker_threads';
 import { cloneDeep } from 'lodash';
-import { REFRESH_PAGE } from '#/events/socket-constants';
+import { HIDE_LOADING, REFRESH_PAGE, SHOW_LOADING } from '#/events/socket-constants';
 
 export interface IAirVmWorkerParams {
   port: MessagePort;
@@ -30,6 +30,19 @@ export default async (params: IAirVmWorkerParams) => {
   airVm.on(REFRESH_PAGE, () => {
     port.postMessage({
       ev: REFRESH_PAGE,
+    });
+  });
+
+  airVm.on(SHOW_LOADING, (...data) => {
+    port.postMessage({
+      ev: SHOW_LOADING,
+      data,
+    });
+  });
+
+  airVm.on(HIDE_LOADING, () => {
+    port.postMessage({
+      ev: HIDE_LOADING,
     });
   });
 
