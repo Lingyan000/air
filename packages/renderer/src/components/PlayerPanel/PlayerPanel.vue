@@ -307,6 +307,9 @@
 
   watch(activeRef, (v) => {
     if (!v) {
+      posRef.value = 0;
+      currentSelectedIndex.value = -1;
+      currentPlayUrl.value = '';
       document.pictureInPictureElement && document.exitPictureInPicture();
       isNeedSetHeader.value = false;
       filter.value.urls = [];
