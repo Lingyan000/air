@@ -77,7 +77,7 @@
 
   let artInstance: typeof Artplayer | null = null;
 
-  let currentSelectedIndex = ref<number>(0);
+  let currentSelectedIndex = ref<number>(-1);
 
   async function show(
     title: string,
@@ -93,9 +93,9 @@
 
     currentOrgin.value = origin;
 
-    if (origin?.selectedList) {
+    if (origin?.selectedList && currentSelectedIndex.value < 0) {
       selectedList.value = origin.selectedList;
-      for (let [item, index] of origin.selectedList.entries()) {
+      for (let [index, item] of origin.selectedList.entries()) {
         if (item.use) {
           currentSelectedIndex.value = index;
           break;
@@ -300,7 +300,7 @@
     });
     instance.on('video:loadedmetadata', () => {
       window.setTimeout(() => {
-        if (artInstance) artInstance.seek = posRef.value;
+        if (artInstance && posRef.value) artInstance.seek = posRef.value;
       }, 500);
     });
   }
@@ -384,7 +384,7 @@
               :type="currentSelectedIndex === index ? 'primary' : 'default'"
               size="large"
               tertiary
-              class="tw-w-full tw-child-w-full tw-text-center"
+              class="selected__item tw-w-full tw-child-w-full tw-text-center"
               ><n-ellipsis :tooltip="false">{{ item.title }}</n-ellipsis></n-button
             >
           </n-gi>
@@ -397,3 +397,9 @@
     </n-drawer-content>
   </n-drawer>
 </template>
+
+<style scoped>
+  .selected__item /deep/ .n-button__content {
+    display: block;
+  }
+</style>

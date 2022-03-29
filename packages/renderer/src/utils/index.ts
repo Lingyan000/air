@@ -295,6 +295,7 @@ export function getAdjacentElements<T>(arr: T[], index: number, fn: (item: T) =>
   if (index >= 0 && index < arr.length) {
     if (index > 0) {
       for (let i = index - 1; i >= 0; i--) {
+        console.log(arr[i]);
         if (fn(arr[i])) {
           result.push({ ...arr[i], use: false });
         } else {
@@ -302,6 +303,7 @@ export function getAdjacentElements<T>(arr: T[], index: number, fn: (item: T) =>
         }
       }
     }
+    result.reverse();
     result.push({ ...arr[index], use: true });
     if (index < arr.length - 1) {
       for (let i = index + 1; i < arr.length; i++) {
