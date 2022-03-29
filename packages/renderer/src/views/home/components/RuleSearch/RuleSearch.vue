@@ -1,6 +1,6 @@
 <script lang="ts" setup>
   import { ref, onMounted, provide, computed, watch, Ref } from 'vue';
-  import { NInputGroup, NInput, NButton, NPopover, useMessage } from 'naive-ui';
+  import { NInputGroup, NInput, NButton, NPopover, useMessage, useDialog } from 'naive-ui';
   import { Search as SearchIcon } from '@vicons/ionicons5';
   import RuleSearchList from './RuleSearchList.vue';
   import { homeRuleSearchInjectionKey } from '/@/views/home/components/RuleSearch/interface';
@@ -8,11 +8,18 @@
   import { VResizeObserver } from 'vueuc';
   import { useArtilelistruleStore } from '/@/store/modules/artilelistrule';
   import * as Models from '#/models';
-  import { union } from 'lodash';
+  import { debounce, union } from 'lodash';
+  import useSearchStore from '/@/store/modules/search';
+  import { TrashOutline as TrashOutlineIcon } from '@vicons/ionicons5';
+  import { getBaiduSuggestion } from '/@/utils';
 
   const emit = defineEmits(['search']);
 
+  const dialog = useDialog();
+
   const artilelistruleStore = useArtilelistruleStore();
+
+  const searchStore = useSearchStore();
 
   const groups = computed(() => artilelistruleStore.groups);
 
@@ -76,6 +83,10 @@
 
   const searchVal = ref('');
 
+  const historyList = computed(() =>
+    searchStore.historyList.filter((item) => item.toString().includes(searchVal.value))
+  );
+
   const borderRadius_10 = ref({
     borderRadius: '10px',
   });
@@ -96,17 +107,49 @@
   });
 
   const handleSearch = () => {
-    if (!searchVal.value) return message.warning('要不你还是把我删了吧！');
+    if (!searchVal.value) return message.warning('请输入搜索内容！');
     if (activeIdRef.value) {
+      searchStore.addHistory(searchVal.value);
       artilelistruleStore.pushLastSearchIds(activeIdRef.value);
-      emit('search', activeIdRef.value!, searchVal.value);
+      emit('search', activeRuleRef.value!, searchVal.value);
     } else {
       message.warning('请选择搜索规则！');
     }
   };
 
+  function deleteHistoryList() {
+    dialog.warning({
+      title: '提示',
+      content: '确定要清空历史记录吗？',
+      positiveText: '确定',
+      negativeText: '不确定',
+      onPositiveClick: () => {
+        searchStore.deleteHistoryList();
+      },
+      onNegativeClick: () => {},
+    });
+  }
+
   onMounted(() => {
     popWidth.value = getRect(nInputGroupRef.value?.$el).width;
+  });
+
+  const baiduSuggestion = ref<string[]>([]);
+
+  const getBaiduSu = debounce((v) => {
+    getBaiduSuggestion(v)
+      .then((res) => {
+        baiduSuggestion.value = res.s;
+      })
+      .catch(() => {});
+  }, 100);
+
+  watch(searchVal, (v) => {
+    if (v) {
+      getBaiduSu(v);
+    } else {
+      baiduSuggestion.value = [];
+    }
   });
 </script>
 
@@ -136,7 +179,7 @@
                     <n-button
                       ghost
                       class="homeAirSearch__group-btn tw-tracking-wide"
-                      :type="groupRef === '全部' ? 'primary' : ''"
+                      :type="groupRef === '全部' ? 'primary' : 'default'"
                       @click="filterSearchList('全部')"
                       >全部</n-button
                     >
@@ -145,7 +188,7 @@
                       :key="index"
                       ghost
                       class="homeAirSearch__group-btn tw-leading-normal tw-tracking-wide"
-                      :type="groupRef === item ? 'primary' : ''"
+                      :type="groupRef === item ? 'primary' : 'default'"
                       @click="filterSearchList(item)"
                       ><n-ellipsis>{{ item }}</n-ellipsis></n-button
                     >
@@ -167,14 +210,53 @@
             </n-button>
           </template>
         </n-popover>
-        <n-input
-          v-model:value="searchVal"
-          :style="{ flex: '1', ...borderRadius_10 }"
-          placeholder="搜索"
-          round
+        <n-popover
+          width="trigger"
+          trigger="focus"
+          placement="bottom"
+          :show-arrow="false"
           size="large"
-          @keyup.enter="handleSearch"
-        />
+          :disabled="!historyList.length && !searchVal"
+          :style="{
+            borderRadius: '12px',
+            padding: 0,
+          }"
+        >
+          <template #trigger>
+            <n-input
+              v-model:value="searchVal"
+              :style="{ flex: '1', ...borderRadius_10 }"
+              placeholder="搜索"
+              round
+              size="large"
+              @keyup.enter="handleSearch"
+            />
+          </template>
+          <n-scrollbar :style="{ maxHeight: popMaxHeight - 30 + 'px' }">
+            <n-button
+              v-for="(item, index) in [...historyList, ...baiduSuggestion]"
+              :key="index"
+              quaternary
+              class="tw-w-full tw-justify-between"
+              @click="searchVal = item"
+            >
+              {{ item }}
+            </n-button>
+            <div
+              v-if="!searchVal"
+              class="tw-sticky tw-box-border tw-z-10 tw-w-full tw-p-sm tw-text-right"
+              style="bottom: 0"
+            >
+              <n-button strong secondary circle type="error" @click="deleteHistoryList">
+                <template #icon>
+                  <n-icon>
+                    <trash-outline-icon />
+                  </n-icon>
+                </template>
+              </n-button>
+            </div>
+          </n-scrollbar>
+        </n-popover>
         <n-button
           :style="{
             ...borderRadius_10,

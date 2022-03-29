@@ -74,6 +74,7 @@ interface HikerResultOption {
   url?: string;
   img?: string;
   pic_url?: string;
+  extra?: any;
 }
 
 interface HikerSearchResultOption {

@@ -22,7 +22,11 @@
       password: ruleRef.value,
     })
       .then((res) => {
-        message.success(`成功导入✨${res.title}✨`);
+        if ((['home_rule', 'home_rule_v2'] as PasswordSignType[]).includes(res.type)) {
+          message.success(`成功导入✨${res.data.title}✨`);
+        } else if (res.type == 'home_rule_url') {
+          message.success(`成功导入${res.data.length}条规则`);
+        }
         showModalRef.value = false;
         emit('sucess');
       })

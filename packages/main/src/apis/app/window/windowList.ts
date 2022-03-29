@@ -62,7 +62,7 @@ windowList.set(IWindowList.MAIN_WINDOW, {
       options.frame = false;
       options.backgroundColor = backgroundColor;
       options.transparent = false;
-      options.icon = './icon.png';
+      options.icon = './icon.ico';
     }
     return options;
   },

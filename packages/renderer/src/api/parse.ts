@@ -39,7 +39,7 @@ export function getLazyRuleResult(params: ParseQuery.GetLazyRuleResult) {
   return http.request<any>({
     url: '/parse/getLazyRuleResult',
     params,
-    method: 'get',
+    method: 'post',
   });
 }
 
@@ -47,8 +47,8 @@ export function getLazyRuleResult(params: ParseQuery.GetLazyRuleResult) {
 export function getChildPageRuleResult(params: ParseQuery.GetChildPageRuleResult) {
   return http.request<HikerResultOption[]>({
     url: '/parse/getChildPageRuleResult',
-    params,
-    method: 'get',
+    data: params,
+    method: 'post',
   });
 }
 
@@ -65,7 +65,16 @@ export function preHandle(params: ParseQuery.PreHandle) {
 export function getRuleResult(params: ParseQuery.GetRuleResult) {
   return http.request<HikerResultOption[]>({
     url: '/parse/getRuleResult',
-    params,
-    method: 'get',
+    data: params,
+    method: 'post',
+  });
+}
+
+// 解析自定义规则（比如历史记录）
+export function getCustomRuleResult(params: ParseQuery.GetCustomRuleResult) {
+  return http.request<HikerResultOption[]>({
+    url: '/parse/getCustomRuleResult',
+    data: params,
+    method: 'post',
   });
 }

@@ -5,6 +5,7 @@ import { PageEnum } from '/@/enums/pageEnum';
 import { isObject } from './is/index';
 import { cloneDeep } from 'lodash-es';
 import { nanoid } from 'nanoid';
+import jsoup from 'fetch-jsonp';
 
 /**
  * render 图标
@@ -221,9 +222,12 @@ export function isImageUrl(url: string) {
 }
 
 export function isVideoUrl(url: string) {
+  try {
+    const url2 = new URL(url);
+    url = url2.pathname;
+  } catch (e) {}
   return (
-    /\.(mp4|mov|m4v|webm|flv|wmv|avi|3gp|mkv|m3u8|)([;#]{.*})?$/i.test(url) ||
-    /.*#isVideo=true#.*/i.test(url)
+    /(mp4|mov|m4v|webm|flv|wmv|avi|3gp|mkv|m3u8).*/i.test(url) || /.*#isVideo=true#.*/i.test(url)
   );
 }
 
@@ -283,4 +287,42 @@ export function spliteArray<T>(arr: T[], size: number) {
     });
   }
   return arrays;
+}
+
+// 获取数组中当前索引相邻的所有包含符合条件的元素及本身
+export function getAdjacentElements<T>(arr: T[], index: number, fn: (item: T) => boolean) {
+  const result: T[] = [];
+  if (index >= 0 && index < arr.length) {
+    if (index > 0) {
+      for (let i = index - 1; i >= 0; i--) {
+        if (fn(arr[i])) {
+          result.push({ ...arr[i], use: false });
+        } else {
+          break;
+        }
+      }
+    }
+    result.push({ ...arr[index], use: true });
+    if (index < arr.length - 1) {
+      for (let i = index + 1; i < arr.length; i++) {
+        if (fn(arr[i])) {
+          result.push({ ...arr[i], use: false });
+        } else {
+          break;
+        }
+      }
+    }
+  }
+  return result;
+}
+
+export function getBaiduSuggestion(keyword: string) {
+  return jsoup(
+    `http://suggestion.baidu.com/su?wd=${keyword}&p=3&t=${new Date().valueOf()}&qq-pf-to=pcqq.c2c&cb=callback`,
+    {
+      jsonpCallbackFunction: 'callback',
+    }
+  ).then((res) => {
+    return res.json();
+  });
 }

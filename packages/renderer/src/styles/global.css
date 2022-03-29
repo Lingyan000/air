@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .tw-child-w-full > * {
+    width: 100%;
+  }
+}
+
 * {
   margin: 0;
   padding: 0;

@@ -11,8 +11,9 @@
   } from 'naive-ui';
   import { getSearchRuleResult, preHandle } from '/@/api/parse';
   import SearchItem from '/@/components/SearchItem/index.vue';
-  import ArticleListRule from '../../../../../../main/src/apis/core/database/sqlite/models/articlelistrule';
   import { useArtilelistruleStore } from '/@/store/modules/artilelistrule';
+  import tb from 'ts-toolbelt';
+  import * as Models from '#/models';
 
   const artilelistruleStore = useArtilelistruleStore();
 
@@ -22,7 +23,7 @@
 
   const loadingBar = useLoadingBar();
 
-  const idRef = ref<number | null>(null);
+  const idRef = ref<number | undefined>(undefined);
   const searchValRef = ref('');
   const activeRef = ref(false);
 
@@ -44,6 +45,7 @@
 
   const loadingRef: Ref<boolean> = ref(false);
   const currentPage: Ref<number> = ref(1);
+  const articlelistruleRef: Ref<tb.Object.Optional<Models.Articlelistrule>> = ref({});
 
   async function getSearchResult() {
     try {
@@ -75,22 +77,13 @@
     getSearchResult();
   }
 
-  function handleClick(item) {
+  function handleClick(item, index) {
     emit('on-click-item', {
-      id: idRef.value,
+      articlelistrule: articlelistruleRef.value,
       item,
+      index,
     });
   }
-
-  const searchRuleRef = computed(() => {
-    if (idRef.value === null) {
-      return null;
-    }
-
-    return artilelistruleStore.listMap.has(idRef.value)
-      ? (artilelistruleStore.listMap.get(idRef.value) as ArticleListRule)
-      : null;
-  });
 
   // 清空搜索结果
   watch(activeRef, () => {
@@ -98,15 +91,16 @@
     currentPage.value = 1;
   });
 
-  function open(id: number, value: string) {
+  function show(articlelistrule: tb.Object.Optional<Models.Articlelistrule>, value: string) {
     activeRef.value = true;
-    idRef.value = id;
+    idRef.value = articlelistrule.id;
+    articlelistruleRef.value = articlelistrule;
     searchValRef.value = value;
     getSearchResult();
   }
 
   defineExpose({
-    open,
+    show,
   });
 </script>
 
@@ -119,6 +113,7 @@
     display-directive="show"
     class="searchResultPanel"
     :z-index="1999"
+    :auto-focus="false"
   >
     <n-drawer-content :native-scrollbar="false">
       <template #header>
@@ -133,8 +128,8 @@
               :image="item.img || item.pic_url"
               :description="item.desc"
               :content="item.content"
-              :rule-title="searchRuleRef ? searchRuleRef.title : ''"
-              @click="handleClick(item)"
+              :rule-title="articlelistruleRef.title"
+              @click="handleClick(item, index)"
             ></search-item>
           </n-gi>
         </n-grid>

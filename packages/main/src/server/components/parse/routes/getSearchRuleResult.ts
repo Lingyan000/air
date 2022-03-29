@@ -25,6 +25,7 @@ export default function getRoute() {
     handler: async (request) => {
       const rule = await articlelistrule.findByPk(Number(request.query.id), {
         rejectOnEmpty: true,
+        raw: true,
       });
 
       const home = await articlelistrule.findAll();
@@ -42,28 +43,28 @@ export default function getRoute() {
         encoding,
         method,
         headers,
-      } = airParse.splitProtoUrl(rule.get('search_url'), fyPageParams);
+      } = airParse.splitProtoUrl(rule.search_url, fyPageParams);
       return airParse
         .parseSearchRule({
           url: url,
           params: ruleParams,
           method,
           data,
-          parseCode: rule.get('searchfind'),
+          parseCode: rule.searchfind,
           encoding,
           headers,
           fyPageParams,
-          preParseCode: rule.get('prerule'),
-        })
-        .catch((e) => {
-          console.error(e);
-          throw new Error(e.message);
+          preParseCode: rule.prerule,
         })
         .finally(() => {
           (request as any).session.vars = airParse.vars;
           (request as any).session.allConfig = airParse.allConfig;
           (request as any).session.allMyVars = airParse.allMyVars;
         });
+    },
+    errorHandler: (error) => {
+      console.error(error);
+      return error;
     },
   };
 

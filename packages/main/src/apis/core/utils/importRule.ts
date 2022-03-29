@@ -1,6 +1,7 @@
 import validator from 'validator';
 import ArticleListRule from '/@/apis/core/database/sqlite/models/articlelistrule';
 import CryptoJS from 'crypto-js';
+import articlelistrule from '/@/apis/core/database/sqlite/models/articlelistrule';
 
 export class ImportRule {
   constructor(public readonly type: PasswordSignType, public rule: string) {}
@@ -8,12 +9,14 @@ export class ImportRule {
   /**
    * 导入
    */
-  public async import(): Promise<ArticleListRule> {
+  public async import(): Promise<any> {
     switch (this.type) {
       case 'home_rule':
         return await this.importHome();
       case 'home_rule_v2':
         return await this.importHome();
+      case 'home_rule_url':
+        return await this.importHomeRuleUrl();
       default:
         throw new Error(`不支持的导入类型: ${this.type}`);
     }
@@ -47,5 +50,19 @@ export class ImportRule {
       articleListRule = await ArticleListRule.create(rule as any);
     }
     return articleListRule;
+  }
+
+  /**
+   * 导入合集
+   * @private
+   */
+  private async importHomeRuleUrl(): Promise<ArticleListRule[]> {
+    const got = (await require('./esm-got.cjs')).default;
+    const res = await got(this.rule).json();
+    const articlelistrules = await articlelistrule.bulkCreate(res, {
+      validate: true,
+      ignoreDuplicates: true,
+    });
+    return Promise.resolve(articlelistrules);
   }
 }

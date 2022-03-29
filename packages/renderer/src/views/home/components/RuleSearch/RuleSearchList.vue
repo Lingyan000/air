@@ -30,7 +30,7 @@
   });
 
   const topHeight = computed(() => {
-    return (lastSearchRuleList.value.length / chunkSize.value) * 44 + 48;
+    return Math.ceil(lastSearchRuleList.value.length / chunkSize.value) * 44 + 48;
   });
 
   const visibleItemsTag = defineComponent({

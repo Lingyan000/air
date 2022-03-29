@@ -17,8 +17,10 @@ import CryptoJS from 'crypto-js';
 import { MOBILE_UA, PC_UA } from '#/parse/constants';
 import { EventEmitter } from 'events';
 import { HIDE_LOADING, REFRESH_PAGE, SHOW_LOADING } from '#/events/socket-constants';
+import dayjs from 'dayjs';
 import validator from 'validator';
 import isJSON = validator.isJSON;
+import { addOrUpdateRequireData, getRequireData } from '/@/apis/core/air/utils/require';
 
 const vmScript = join(__dirname, './vm/script.js');
 const vmHikerurl = join(__dirname, './vm/Hikerurl.js');
@@ -48,6 +50,7 @@ export default class AirVm extends EventEmitter {
   public documentsDir: string;
   private syncFetch = createSyncFn(require.resolve('./worker/fetch'), 1024 * 1024);
   private syncFetchCookie = createSyncFn(require.resolve('./worker/fetchCookie'), 1024 * 1024);
+  private requirePath: string;
 
   constructor(
     vmType: VmType,
@@ -59,6 +62,10 @@ export default class AirVm extends EventEmitter {
     this.ctx = ctx;
     const { rescode, documentsDir } = params;
     this.documentsDir = documentsDir;
+    this.requirePath = join(
+      this.documentsDir,
+      './rules/files/' + this.ctx.articlelistrule.title + '/require.json'
+    );
     this.vmType = vmType;
     this.rescode = rescode;
     this.sandbox = { ...this.getSandbox(), ...sandbox };
@@ -110,11 +117,12 @@ export default class AirVm extends EventEmitter {
       AIR_RESULT: this.result,
       AIR_RESCODE: this.rescode,
       writeFile: this.writeFile,
+      MY_HOME: this.ctx.baseUrl,
       MY_URL: this.ctx.myUrl,
       // eval: this.eval,
       getPrivateJS: this.getPrivateJS,
       evalPrivateJS: this.evalPrivateJS,
-      log: console.log,
+      log: this.log,
       base64Encode: this.base64Encode,
       base64Decode: this.base64Decode,
       CryptoJS: CryptoJS,
@@ -144,14 +152,17 @@ export default class AirVm extends EventEmitter {
       confirm: () => {}, // TODO
       setPageTitle: () => {}, // TODO
       setLastChapterRule: this.setLastChapterRule, // TODO
-      showLoading: this.showLoading, // TODO
+      showLoading: this.showLoading,
       hideLoading: this.hideLoading,
       addListener: this._addListener, // TODO
       getUrl: this.getUrl,
-      MY_HOME: (this.ctx.articlelistrule as any).dataValues,
       getPath: this.getPath,
     };
   }
+
+  private log = wrap(this, (that, message: string) => {
+    console.log(dayjs().format('HH:mm:ss.SSS：') + that.ctx.articlelistrule.title + '：' + message);
+  });
 
   private getHomeSandbox() {
     return {
@@ -332,37 +343,7 @@ export default class AirVm extends EventEmitter {
       },
       version = 0
     ) => {
-      const fileName = that.md5(url);
-      const configPath = join(that.documentsDir, './libs/' + fileName + '.json');
-      const filePath = join(that.documentsDir, './libs/' + fileName + '.js');
-      if (!fs.existsSync(configPath)) {
-        fs.ensureFileSync(configPath);
-        const content = JSON.stringify({
-          version,
-          url,
-        });
-        fs.writeFileSync(configPath, content);
-      }
-
-      // 升级版本号
-      const configTxt = fs.readFileSync(configPath, 'utf-8');
-      if (isJSON(configTxt)) {
-        const config = JSON.parse(configTxt);
-        if (config.version != version) {
-          fs.rmSync(filePath);
-          config.version = version;
-          fs.writeFileSync(configPath, JSON.stringify(config));
-        }
-      }
-
-      if (!fs.existsSync(filePath)) {
-        const content = that.fetch(url, {
-          headers: data.headers,
-        });
-        fs.ensureFileSync(filePath);
-        fs.writeFileSync(filePath, content);
-      }
-      that.vm?.runFile(filePath);
+      that.requireCache(url, 0, data, version);
     }
   );
 
@@ -395,7 +376,8 @@ export default class AirVm extends EventEmitter {
 
   private initConfig = wrap(this, (that, config: any) => {
     that.ctx.config = { ...that.ctx.config, ...config };
-    that.ctx.allConfig[(that.ctx.articlelistrule as any).dataValues.id] = that.ctx.config;
+    that.ctx.allConfig[that.ctx.articlelistrule.id || that.ctx.articlelistrule.title] =
+      that.ctx.config;
   });
 
   private getVar = wrap(this, (that, key: string, defaultValue = '') => {
@@ -421,7 +403,8 @@ export default class AirVm extends EventEmitter {
 
   private putMyVar = wrap(this, (that, key: string, value: string) => {
     that.ctx.myVars[key] = value;
-    that.ctx.allMyVars[(that.ctx.articlelistrule as any).dataValues.id] = that.ctx.myVars;
+    that.ctx.allMyVars[that.ctx.articlelistrule.id || that.ctx.articlelistrule.title] =
+      that.ctx.myVars;
   });
 
   private getMyVar = wrap(this, (that, key: string, defaultValue: string) => {
@@ -434,10 +417,66 @@ export default class AirVm extends EventEmitter {
     }
   });
 
-  private requireCache = wrap<this, any, void>(this, (that, url: string, hour: number) => {
-    console.log(hour);
-    that.require(url);
-  });
+  private requireCache = wrap<this, any, void>(
+    this,
+    (
+      that,
+      url: string,
+      hour: number,
+      data = {
+        headers: {},
+      },
+      version = 0
+    ) => {
+      const fileName = that.md5(url);
+      const configPath = join(that.documentsDir, './libs/' + fileName + '.json');
+      const filePath = join(that.documentsDir, './libs/' + fileName + '.js');
+      const requirePath = that.requirePath;
+      if (!fs.existsSync(configPath)) {
+        fs.ensureFileSync(configPath);
+        const content = JSON.stringify({
+          version,
+          url,
+        });
+        fs.writeFileSync(configPath, content);
+      }
+
+      // 升级版本号
+      const configTxt = fs.readFileSync(configPath, 'utf-8');
+      if (isJSON(configTxt)) {
+        const config = JSON.parse(configTxt);
+        if (config.version != version) {
+          fs.rmSync(configPath);
+          config.version = version;
+          fs.writeFileSync(configPath, JSON.stringify(config));
+        }
+      }
+
+      // 写入依赖文件
+      function writeDependFile() {
+        const content = that.fetch(url, {
+          headers: data.headers,
+        });
+        fs.ensureFileSync(filePath);
+        fs.writeFileSync(filePath, content);
+        addOrUpdateRequireData(requirePath, url, filePath);
+      }
+
+      if (!fs.existsSync(filePath)) {
+        writeDependFile();
+      } else if (hour) {
+        // 检查是否过期
+        const data = getRequireData(requirePath);
+        const index = data.findIndex((item) => item.url === url);
+        if (index === -1 || dayjs(data[index].accessTime).add(hour, 'hour').isBefore(dayjs())) {
+          fs.rmSync(filePath);
+          writeDependFile();
+        }
+      }
+
+      return that.vm?.runFile(filePath);
+    }
+  );
 
   private getUrl = wrap(this, (that) => {
     return that.ctx.myUrl;
@@ -453,7 +492,7 @@ export default class AirVm extends EventEmitter {
     that.emit(HIDE_LOADING);
   });
 
-  private _addListener() {}
+  private _addListener = wrap(this, () => {});
 
   private getPath = wrap(this, (that, url: string) => {
     if (url.startsWith('hiker://files')) {

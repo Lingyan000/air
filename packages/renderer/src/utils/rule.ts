@@ -23,18 +23,18 @@ export function replaceMark(value: string): string {
 
 export function splitItemUrl(url = ''): ItemUrlSplitResult {
   if (url.includes('@lazyRule')) {
-    const [resUrl, rule] = url.split('@lazyRule=');
+    const [resUrl, ...rule] = url.split('@lazyRule=');
     return {
       url: resUrl,
       type: 'lazyRule',
-      rule,
+      rule: rule.join('@lazyRule='),
     };
   } else if (url.includes('@rule')) {
-    const [resUrl, rule] = url.split('@rule=');
+    const [resUrl, ...rule] = url.split('@rule=');
     return {
       url: resUrl,
       type: 'rule',
-      rule,
+      rule: rule.join('@rule='),
     };
   } else if (url.startsWith('hiker://page')) {
     return {

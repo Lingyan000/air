@@ -34,6 +34,7 @@ export default function getRoute() {
 
       const rule = await articlelistrule.findByPk(Number(request.query.id), {
         rejectOnEmpty: true,
+        raw: true,
       });
 
       const home = await articlelistrule.findAll();
@@ -42,18 +43,15 @@ export default function getRoute() {
       const airParse = new AirParse(rule, home, (request as any).session || {});
       let parseCode = '';
       if (request.query.from === From['search']) {
-        const sdetail_find_rule = rule.get('sdetail_find_rule');
-        parseCode = sdetail_find_rule === '*' ? rule.get('detail_find_rule') : sdetail_find_rule;
+        const sdetail_find_rule = rule.sdetail_find_rule;
+        parseCode = sdetail_find_rule === '*' ? rule.detail_find_rule : sdetail_find_rule;
         ({ url, params, data, encoding, method, headers } = airParse.splitProtoUrl(
-          rule?.getDataValue('search_url'),
+          rule?.search_url,
           {}
         ));
       } else {
-        parseCode = rule?.getDataValue('detail_find_rule');
-        ({ url, params, data, encoding, method, headers } = airParse.splitProtoUrl(
-          rule?.getDataValue('url'),
-          {}
-        ));
+        parseCode = rule?.detail_find_rule;
+        ({ url, params, data, encoding, method, headers } = airParse.splitProtoUrl(rule?.url, {}));
       }
       ({ url, params, data } = airParse.splitProtoUrl(request.query.url, {}));
       return airParse
@@ -65,17 +63,17 @@ export default function getRoute() {
           parseCode,
           encoding,
           headers,
-          preParseCode: rule.get('prerule'),
-        })
-        .catch((e) => {
-          console.error(e);
-          throw new Error(e.message);
+          preParseCode: rule.prerule,
         })
         .finally(() => {
           (request as any).session.vars = airParse.vars;
           (request as any).session.allConfig = airParse.allConfig;
           (request as any).session.allMyVars = airParse.allMyVars;
         });
+    },
+    errorHandler: (error) => {
+      console.error(error);
+      return error;
     },
   };
 

@@ -1,84 +1,43 @@
-import { DataTypes, Model } from 'sequelize';
+import { DataTypes, InferAttributes, Model } from 'sequelize';
 import sequelize from './sequelize';
 import dayjs from 'dayjs';
 
-interface ArticleListRuleAttributes {
-  id: number;
-  title: string;
-  area_name: string;
-  area_url: string;
-  author: string;
-  chapter_find: string;
-  class_name: string;
-  class_url: string;
-  col_type: string;
-  detail_col_type: string;
-  detail_find_rule: string;
-  find_rule: string;
-  firstheader: string;
-  group_lpcolumn: string;
-  prerule: string;
-  sdetail_col_type: string;
-  sdetail_find_rule: string;
-  searchfind: string;
-  search_url: string;
-  sort_name: string;
-  sort_url: string;
-  titlecolor: string;
-  ua: string;
-  url: string;
-  version: number;
-  year_name: string;
-  year_url: string;
-  gmtcreate: number;
-  gmtmodified: number;
-  lastusetime: number;
-  last_chapter_rule: string;
-  pages: string;
-  storage: string;
-  icon: string;
-  type: string;
-}
-
-class ArticleListRule
-  extends Model<ArticleListRuleAttributes>
-  implements ArticleListRuleAttributes
-{
-  id!: number;
-  title!: string;
-  area_name!: string;
-  area_url!: string;
-  author!: string;
-  chapter_find!: string;
-  class_name!: string;
-  class_url!: string;
-  col_type!: string;
-  detail_col_type!: string;
-  detail_find_rule!: string;
-  find_rule!: string;
-  firstheader!: string;
-  group_lpcolumn!: string;
-  prerule!: string;
-  sdetail_col_type!: string;
-  sdetail_find_rule!: string;
-  searchfind!: string;
-  search_url!: string;
-  sort_name!: string;
-  sort_url!: string;
-  titlecolor!: string;
-  ua!: string;
-  url!: string;
-  version!: number;
-  year_name!: string;
-  year_url!: string;
-  gmtcreate!: number;
-  gmtmodified!: number;
-  lastusetime!: number;
-  last_chapter_rule!: string;
-  pages!: string;
-  storage!: string;
-  icon!: string;
-  type!: string;
+class ArticleListRule extends Model<InferAttributes<ArticleListRule>> {
+  declare id: number;
+  declare title: string;
+  declare area_name: string;
+  declare area_url: string;
+  declare author: string;
+  declare chapter_find: string;
+  declare class_name: string;
+  declare class_url: string;
+  declare col_type: string;
+  declare detail_col_type: string;
+  declare detail_find_rule: string;
+  declare find_rule: string;
+  declare firstheader: string;
+  declare group_lpcolumn: string;
+  declare prerule: string;
+  declare sdetail_col_type: string;
+  declare sdetail_find_rule: string;
+  declare searchfind: string;
+  declare search_url: string;
+  declare sort_name: string;
+  declare sort_url: string;
+  declare titlecolor: string;
+  declare ua: string;
+  declare url: string;
+  declare version: number;
+  declare year_name: string;
+  declare year_url: string;
+  declare gmtcreate: number;
+  declare gmtmodified: number;
+  declare lastusetime: number;
+  declare last_chapter_rule: string;
+  declare pages: string;
+  declare storage: string;
+  declare icon: string;
+  declare type: string;
 }
 
 ArticleListRule.init(

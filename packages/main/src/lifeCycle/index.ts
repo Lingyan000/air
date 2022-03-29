@@ -17,10 +17,6 @@ const mainWindow: BrowserWindow | null = null;
 
 class LifeCycle {
   private async beforeReady() {
-    if (process.argv.length > 1) {
-      const path = process.argv[1];
-      importHikerFile(path);
-    }
     protocol.registerSchemesAsPrivileged([
       { scheme: 'airr', privileges: { secure: true, standard: true } },
     ]);
@@ -65,6 +61,12 @@ class LifeCycle {
           const notice = new Notification(option!);
           notice.show();
         }
+      }
+
+      if (process.argv.length > 1) {
+        console.log(process.argv);
+        const path = process.argv[1];
+        importHikerFile(path);
       }
 
       setDefaultHeaders();

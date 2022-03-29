@@ -31,7 +31,6 @@ export class Server {
         socket.on('addGroup', (id) => {
           socket.join(id);
         });
-        console.info('Socket connected!', socket.id);
       });
     });
 

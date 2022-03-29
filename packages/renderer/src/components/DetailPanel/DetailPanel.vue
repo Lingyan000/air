@@ -1,20 +1,47 @@
 <script lang="ts" setup>
   import { ref, defineExpose, Ref, computed, watch } from 'vue';
-  import { getChildPageRuleResult, getRuleDetailResult, getRuleResult } from '/@/api/parse';
-  import { useLoadingBar, useMessage, NGrid, NGi, NDrawer } from 'naive-ui';
+  import {
+    getChildPageRuleResult,
+    getCustomRuleResult,
+    getRuleDetailResult,
+    getRuleResult,
+  } from '/@/api/parse';
+  import { useLoadingBar, useMessage, NGrid, NGi, NDrawer, NButton } from 'naive-ui';
   import AirColComponent from '/@/components/AirColComponent/AirColComponent.vue';
   import { normalSpan } from '/@/utils/colSpan';
   import { From } from '#/enums';
   import { useArtilelistruleStore } from '/@/store/modules/artilelistrule';
   import ScrollButtonList from '/@/components/ScrollButtonList/ScrollButtonList.vue';
   import { wrapTextToHtml } from '/@/utils/text';
+  import * as Models from '#/models';
+  import tb from 'ts-toolbelt';
+  import { getViewHistory } from '/@/api/viewhistory';
+  import { getAdjacentElements } from '/@/utils';
+  import { ItemUrlSplitResultType, splitItemUrl } from '/@/utils/rule';
+
+  export type DetailPanelType = 'childPage' | 'rule' | 'onlyData' | 'default';
+
+  export interface DetailPanelOption {
+    type: DetailPanelType;
+    from: From;
+    articlelistrule: tb.Object.Optional<Models.Articlelistrule>;
+    url: string;
+    title: string;
+    rule?: string;
+  }
 
   const artilelistruleStore = useArtilelistruleStore();
 
   const artilelistruleListMap = computed(() => artilelistruleStore.listMap);
 
   const emit = defineEmits<{
-    (e: 'clickItem', id: number, item: HikerResultOption, prefix?: string): void;
+    (
+      e: 'clickItem',
+      articlelistrule: tb.Object.Optional<Models.Articlelistrule>,
+      item: HikerResultOption,
+      index: number,
+      origin?: any
+    ): void;
     (e: 'close'): void;
   }>();
 
@@ -23,22 +50,36 @@
   const loadingBar = useLoadingBar();
   const message = useMessage();
 
-  const typeRef = ref<'childPage' | 'rule' | 'default'>('default');
-  const idRef = ref<number | null>(null);
+  const typeRef = ref<DetailPanelType>('default');
+  const articlelistruleRef = ref<tb.Object.Optional<Models.Articlelistrule>>({});
+  const idRef = ref<number | undefined>(undefined);
   const fromRef = ref<From>(From['home']);
   const urlRef = ref<string>('');
   const titleRef = ref<string>('');
+  const viewHistoryRef = ref<Models.ViewHistory | null>(null);
+  const trackShowTimeRef = ref(0);
+  const trackShowDuration = 10000; // 足迹展示时长
+  const ruleRef = ref<string>('');
 
   const active = ref(false);
 
-  function open(type, from, id, url, title, rule) {
+  /**
+   * 展示
+   * @param option
+   */
+  function show(option: DetailPanelOption) {
+    const { type = 'default', from = From['home'], articlelistrule, url, title, rule } = option;
     typeRef.value = type;
     active.value = true;
     fromRef.value = from;
-    idRef.value = id;
+    idRef.value = articlelistrule.id;
+    articlelistruleRef.value = articlelistrule;
     urlRef.value = url;
     titleRef.value = title;
-    getDetailData(rule);
+    ruleRef.value = rule || '';
+    getDetailData(rule).then(() => {
+      getViewHistoryData();
+    });
   }
 
   // 计算默认的列表类型
@@ -58,6 +99,10 @@
 
   const detailData = ref<HikerResultOption[]>([]);
 
+  /**
+   * 获取详情数据
+   * @param rule
+   */
   function getDetailData(rule = '') {
     loadingBar.start();
     let request: Promise<HikerResultOption[]> | null = null;
@@ -67,6 +112,7 @@
         id: idRef.value!,
         url: urlRef.value,
         fypage: currentPage.value + '',
+        originRule: !idRef.value ? articlelistruleRef.value : undefined,
       });
     } else if (typeRef.value === 'rule') {
       request = getRuleResult({
@@ -74,7 +120,10 @@
         rule: rule,
         id: idRef.value!,
         url: urlRef.value,
+        originRule: !idRef.value ? articlelistruleRef.value : undefined,
       });
+    } else if (typeRef.value === 'onlyData') {
+      request = getCustomRuleResult(articlelistruleRef.value as any);
     } else {
       request = getRuleDetailResult({
         from: fromRef.value,
@@ -83,7 +132,7 @@
       });
     }
     if (typeRef.value)
-      request
+      return request
         .then((res) => {
           detailData.value = res;
           loadingBar.finish();
@@ -92,6 +141,28 @@
           loadingBar.error();
           message.error(err.message);
         });
+    else return Promise.resolve([]);
+  }
+
+  /**
+   * 获取视频播放记录
+   */
+  function getViewHistoryData() {
+    getViewHistory({
+      title: titleRef.value,
+      url: urlRef.value,
+    }).then((res) => {
+      if (res) {
+        viewHistoryRef.value = res;
+        trackShowTimeRef.value = trackShowDuration;
+        const timer = setInterval(() => {
+          trackShowTimeRef.value -= 1000;
+          if (trackShowTimeRef.value <= 0) {
+            clearInterval(timer);
+          }
+        }, 1000);
+      }
+    });
   }
 
   watch(active, (value) => {
@@ -109,14 +180,26 @@
     close();
   }
 
-  function handleItemClick(item: HikerResultOption) {
-    emit('clickItem', idRef.value!, item, titleRef.value);
+  function handleItemClick(item: HikerResultOption, index) {
+    emit('clickItem', articlelistruleRef.value!, item, index, {
+      viewHistoryId: viewHistoryRef.value?.id,
+      title: titleRef.value,
+      url: urlRef.value,
+      pic_url: undefined,
+      selectedList: getAdjacentElements(
+        detailData.value,
+        index,
+        (d) => d.col_type === item.col_type
+      ).filter((d) =>
+        (['video', 'lazyRule'] as ItemUrlSplitResultType[]).includes(splitItemUrl(d.url).type)
+      ),
+    });
   }
 
   function refresh() {
     currentPage.value = 1;
     // detailData.value = [];
-    getDetailData();
+    getDetailData(ruleRef.value);
   }
 
   function hasPrevScroll(item: HikerResultOption, index: number) {
@@ -138,8 +221,16 @@
     return list;
   }
 
+  function getLastClick(lastclick) {
+    const [title = '', index = ''] = lastclick.split('@@');
+    return {
+      title: wrapTextToHtml(title, true),
+      index: Number(index),
+    };
+  }
+
   defineExpose({
-    open,
+    show,
     refresh,
   });
 </script>
@@ -157,6 +248,21 @@
       <template #header>
         <n-page-header :title="wrapTextToHtml(titleRef, true)" @back="handleBack"></n-page-header>
       </template>
+      <n-button
+        v-if="viewHistoryRef && viewHistoryRef.lastclick && trackShowTimeRef"
+        type="primary"
+        round
+        class="tw-fixed tw-z-10 tw-bottom-md tw-right-md"
+        size="large"
+        @click="
+          handleItemClick(
+            detailData[getLastClick(viewHistoryRef.lastclick).index],
+            getLastClick(viewHistoryRef.lastclick).index
+          )
+        "
+      >
+        {{ '足迹：' + getLastClick(viewHistoryRef.lastclick).title }}
+      </n-button>
       <n-grid x-gap="12" y-gap="8" cols="24 800:48 1000:64">
         <template v-for="(item, index) in detailData" :key="index">
           <n-gi
@@ -168,7 +274,7 @@
               :data="getScrollList(item, index)"
               @click-item="
                 (d) => {
-                  handleItemClick(d);
+                  handleItemClick(d, index);
                 }
               "
             />
@@ -179,7 +285,7 @@
               :pic-url="item.pic_url || item.img"
               :title="item.title"
               :url="item.url"
-              @click="handleItemClick(item)"
+              @click="handleItemClick(item, index)"
             />
           </n-gi>
         </template>

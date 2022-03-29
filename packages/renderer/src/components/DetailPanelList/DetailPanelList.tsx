@@ -1,10 +1,10 @@
 import { defineComponent, nextTick, ref } from 'vue';
-import DetailResultPanel from '/@/views/home/components/DetailResultPanel/DetailResultPanel.vue';
+import DetailResultPanel from '/@/components/DetailPanel/DetailPanel.vue';
 import { useSocket } from '/@/hooks/socket';
 import { REFRESH_PAGE } from '#/events/socket-constants';
 
 export default defineComponent({
-  name: 'DetailResultPanelList',
+  name: 'DetailPanelList',
 
   emits: ['clickItem'],
 
@@ -20,8 +20,8 @@ export default defineComponent({
     function add() {
       const detailResultPanel: any = (
         <DetailResultPanel
-          onClickItem={(id, item, prefix) => {
-            emit('clickItem', id, item, prefix);
+          onClickItem={(...arg) => {
+            emit('clickItem', ...arg);
           }}
           onClose={close}
         />

@@ -9,7 +9,6 @@ import { getPasswordRuleType, isCloudShearPlate } from '/@/apis/core/utils/passw
 import { ImportRule } from '/@/apis/core/utils/importRule';
 import { PASSWORD_SIGN } from '#/config';
 import { CloudShearPlate } from '/@/apis/core/utils/cloudShearPlate';
-import * as Models from '#/models';
 
 export default function importRule() {
   const route: RouteOptions<
@@ -17,7 +16,6 @@ export default function importRule() {
     RawRequestDefaultExpression,
     RawReplyDefaultExpression,
     {
-      Reply: Models.Articlelistrule;
       Body: ArticlelistruleQuery.ImportRule;
     }
   > = {
@@ -37,7 +35,16 @@ export default function importRule() {
       const type = getPasswordRuleType(password);
       const rule = password.match(new RegExp(`.*${PASSWORD_SIGN[type].sign}(.*)`))![1] || '';
       const importRule = new ImportRule(type, rule);
-      return await importRule.import();
+      return importRule.import().then((res) => {
+        return {
+          type: importRule.type,
+          data: res,
+        };
+      });
+    },
+    errorHandler: (error) => {
+      console.error(error);
+      return error;
     },
   };
 

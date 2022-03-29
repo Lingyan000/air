@@ -59,18 +59,16 @@ class AirParse {
   vars: { [key: string]: any };
   allMyVars: { [key: string]: { [key: string]: any } };
   colType: ColType = 'movie_3';
-  articlelistrule: ArticleListRule;
   pages: IPages[];
   isRefreshPage = false;
-  home: any[];
   allConfig: { [key: string]: { [key: string]: any } };
   config: { [key: string]: any };
   myVars: { [key: string]: any };
   socketGroupId: string;
 
   constructor(
-    articlelistrule: ArticleListRule,
-    home: any[],
+    public readonly articlelistrule: ArticleListRule,
+    public readonly home: any[],
     data: {
       allConfig: { [key: string]: { [key: string]: any } };
       vars: { [key: string]: any };
@@ -78,13 +76,12 @@ class AirParse {
       socketGroupId: string;
     }
   ) {
-    this.articlelistrule = articlelistrule;
-    this.pages = JSON.parse(this.articlelistrule?.get('pages') || '[]');
+    this.pages = JSON.parse(this.articlelistrule?.pages || '[]');
     this.vars = data.vars || {};
     this.allConfig = data.allConfig || {};
-    this.config = this.allConfig[this.articlelistrule.get('id')] || {};
+    this.config = this.allConfig[this.articlelistrule.id || this.articlelistrule.title] || {};
     this.allMyVars = data.allMyVars || {};
-    this.myVars = this.allMyVars[this.articlelistrule.get('id')] || {};
+    this.myVars = this.allMyVars[this.articlelistrule.id || this.articlelistrule.title] || {};
     this.home = home;
     this.socketGroupId = data.socketGroupId;
   }
@@ -92,9 +89,9 @@ class AirParse {
   private setVmValue(vmData) {
     this.vars = vmData.vars || {};
     this.allConfig = vmData.allConfig || {};
-    this.config = this.allConfig[this.articlelistrule.get('id')] || {};
+    this.config = this.allConfig[this.articlelistrule.id || this.articlelistrule.title] || {};
     this.allMyVars = vmData.allMyVars || {};
-    this.myVars = this.allMyVars[this.articlelistrule.get('id')] || {};
+    this.myVars = this.allMyVars[this.articlelistrule.id || this.articlelistrule.title] || {};
     this.isRefreshPage = vmData.isRefreshPage;
   }
 
@@ -112,7 +109,9 @@ class AirParse {
 
     channel.port2.on('message', (message) => {
       if (message.ev && Object.keys(socketConstList).includes(message.ev)) {
-        global.airServer?.fastify.io.to(this.socketGroupId).emit(message.ev, ...message.data);
+        global.airServer?.fastify.io
+          .to(this.socketGroupId)
+          .emit(message.ev, ...(message.data || []));
       }
     });
 
@@ -148,10 +147,16 @@ class AirParse {
   }
 
   async parseCommon(config: IParseRuleConfig) {
-    this.baseUrl = new URL(config.url).origin;
-    this.baseUrl = isURL(this.baseUrl)
-      ? this.baseUrl
-      : new URL(this.articlelistrule.getDataValue('url')).origin;
+    let url = config.url.startsWith('/') ? this.articlelistrule.url : config.url;
+    if (url.startsWith('hiker://empty#')) {
+      url = url.replace(/hiker:\/\/empty(#+)/i, '');
+    }
+    try {
+      this.baseUrl = new URL(url).origin;
+    } catch (e) {
+      this.baseUrl = '';
+    }
+    this.baseUrl = isURL(this.baseUrl) ? this.baseUrl : new URL(this.articlelistrule.url).origin;
     this.myUrl = config.url + (config.params ? '?' + config.params : '');
     // if (config.preParseCode) {\
     //   const sandbox = await this.preParse(config.preParseCode);
@@ -197,7 +202,7 @@ class AirParse {
     const got: Got = (await require('./esm-got.cjs')).default;
     await this.parseCommon(config);
     if (!isHikerProtocol(config.url)) {
-      return got(config.url, {
+      return got(this.urlWrap(config.url), {
         searchParams: config.params ? config.params : undefined,
         body: config.data ? config.data : undefined,
         method: config.method || 'get',
@@ -276,6 +281,13 @@ class AirParse {
         col_type: data.col_type || page?.col_type || 'movie_3',
       }))
     );
+  }
+
+  async parseCustomRule(config: IParseRuleConfig) {
+    if (config.preParseCode) {
+      await this.preParse(config.preParseCode);
+    }
+    return this.parseRule(config);
   }
 
   async preParse(js) {

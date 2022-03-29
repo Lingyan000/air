@@ -6,6 +6,7 @@ import { getPasswordRuleType } from '/@/apis/core/utils/password';
 import { PASSWORD_SIGN } from '#/config';
 import { ImportRule } from '/@/apis/core/utils/importRule';
 import { Notification } from 'electron';
+import { isPath } from '/@/apis/core/air/utils';
 
 export function importBackup(fileNameOrRawData: string | Buffer): string[] {
   const messageArr: string[] = [];
@@ -38,11 +39,18 @@ export function importBackup(fileNameOrRawData: string | Buffer): string[] {
 
 export async function importHikerFile(path: string): Promise<void> {
   try {
+    if (!(isPath(path) && path.endsWith('.hiker'))) return;
     const content = fs.readFileSync(path, 'utf8');
     const type = getPasswordRuleType(content);
     const rule = content.match(new RegExp(`.*${PASSWORD_SIGN[type].sign}(.*)`))![1] || '';
     const importRule = new ImportRule(type, rule);
-    const articleListRule = await importRule.import();
+    const articleListRule = await importRule.import().then((res) => {
+      if ((['home_rule', 'home_rule_v2'] as PasswordSignType[]).includes(res.type)) {
+        return res.data;
+      } else {
+        return {};
+      }
+    });
     new Notification({
       title: '导入成功',
       body: `成功导入小程序${articleListRule.get('title')}`,

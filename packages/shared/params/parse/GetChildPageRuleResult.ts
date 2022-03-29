@@ -4,10 +4,11 @@ import { From } from '../../enums';
 const from = Type.Enum(From);
 
 export const GetChildPageRuleResult = Type.Object({
-  id: Type.Number(),
+  id: Type.Optional(Type.Number()),
   from: Type.Optional(from),
   url: Type.String(),
   fypage: Type.Optional(Type.String()),
+  originRule: Type.Optional(Type.Any()),
 });
 
 export type GetChildPageRuleResult = Static<typeof GetChildPageRuleResult>;
