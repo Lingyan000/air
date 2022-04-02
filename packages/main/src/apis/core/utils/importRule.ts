@@ -58,7 +58,16 @@ export class ImportRule {
    */
   private async importHomeRuleUrl(): Promise<ArticleListRule[]> {
     const got = (await require('./esm-got.cjs')).default;
-    const res = await got(this.rule).json();
+    const res = await got(this.rule)
+      .json()
+      .then((res) => {
+        return res.map((rule) => {
+          for (const key in rule) {
+            rule[key.toLocaleLowerCase()] = rule[key];
+          }
+          return rule;
+        });
+      });
     const articlelistrules = await articlelistrule.bulkCreate(res, {
       validate: true,
       ignoreDuplicates: true,
