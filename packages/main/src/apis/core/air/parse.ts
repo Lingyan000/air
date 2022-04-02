@@ -1,4 +1,4 @@
-import { Got, Headers, Method } from 'got';
+import { Got } from 'got';
 import iconv from 'iconv-lite';
 import cheerio, { CheerioAPI } from 'cheerio';
 import { VM } from 'vm2';
@@ -23,6 +23,7 @@ import { IAirVmWorkerParams } from '/@/apis/core/air/utils/airVmWorker';
 import * as socketConstList from '#/events/socket-constants';
 import validator from 'validator';
 import isURL = validator.isURL;
+import { splitProtoUrl } from '#/utils';
 
 const piscina = new Piscina({
   filename: path.resolve(__dirname, 'airVmWorker.cjs'),
@@ -60,7 +61,6 @@ class AirParse {
   allMyVars: { [key: string]: { [key: string]: any } };
   colType: ColType = 'movie_3';
   pages: IPages[];
-  isRefreshPage = false;
   allConfig: { [key: string]: { [key: string]: any } };
   config: { [key: string]: any };
   myVars: { [key: string]: any };
@@ -92,7 +92,6 @@ class AirParse {
     this.config = this.allConfig[this.articlelistrule.id || this.articlelistrule.title] || {};
     this.allMyVars = vmData.allMyVars || {};
     this.myVars = this.allMyVars[this.articlelistrule.id || this.articlelistrule.title] || {};
-    this.isRefreshPage = vmData.isRefreshPage;
   }
 
   private runVm(
@@ -120,7 +119,19 @@ class AirParse {
       vmType,
       code,
       port: channel.port1,
-      ctx: this,
+      context: {
+        home: this.home,
+        articlelistrule: this.articlelistrule,
+        baseUrl: this.baseUrl,
+        myUrl: this.myUrl,
+        vars: this.vars,
+        allMyVars: this.allMyVars,
+        colType: this.colType,
+        pages: this.pages,
+        allConfig: this.allConfig,
+        config: this.config,
+        myVars: this.myVars,
+      },
       sandbox,
       rescode,
     };
@@ -130,7 +141,7 @@ class AirParse {
         transferList: [channel.port1],
       })
       .then((res) => {
-        this.setVmValue(res.ctx);
+        this.setVmValue(res.context);
         return { result: res.result, AIR_RESULT: res.AIR_RESULT };
       });
   }
@@ -272,7 +283,7 @@ class AirParse {
     let apiUrl = pageUrl.searchParams.get('url');
     apiUrl = apiUrl ? replaceMark(apiUrl) : '';
     config.url = apiUrl;
-    config = Object.assign(config, this.splitProtoUrl(config.url, config.fyPageParams!));
+    config = Object.assign(config, splitProtoUrl(config.url, config.fyPageParams!));
     const page = this.pages.find((item) => item.path === pageUrl.pathname.slice(1));
     config.parseCode = page?.rule || '';
     return this.parseRule(config).then((data) =>
@@ -449,7 +460,7 @@ class AirParse {
       //   let jsSrc = '';
       //   if (/\.js:/g.test(value)) [value, jsSrc] = value.split('.js:');
       //   if (jsSrc) {
-      //     const airVm = new AirVm(
+      //     const airVm = new Index(
       //       'baseIn',
       //       {
       //         rescode: '',
@@ -469,72 +480,6 @@ class AirParse {
     } else {
       return headers;
     }
-  }
-
-  splitProtoUrl(protoUrl: string, fyPageParams: FyPageParams): UrlConfig {
-    const {
-      fyclass = '',
-      fyarea = '',
-      fyyear = '',
-      fysort = '',
-      fypage = '',
-      fyAll = '',
-      search = '',
-    } = fyPageParams;
-    let url: string;
-    let method: string;
-    let encoding: string;
-    let headers: any;
-    // eslint-disable-next-line prefer-const
-    [url, method = 'GET', encoding = 'utf-8', headers = '{User-Agent@air/1.0.0}'] =
-      protoUrl.split(';');
-    url = url
-      .replace(/fyclass/g, fyclass)
-      .replace(/fyarea/g, fyarea)
-      .replace(/fyyear/g, fyyear)
-      .replace(/fysort/g, fysort)
-      .replace(/fypage/g, fypage)
-      .replace(/fyAll/g, fyAll)
-      .replace(/\*\*/g, search);
-    try {
-      headers = headers
-        .match(/\{(.+?)\}$/)[1]
-        .replace(/；；/g, ';')
-        .split('&&')
-        .map((item) => item.split('@'))
-        .reduce((acc, cur) => {
-          acc[cur[0]] = cur[1];
-          return acc;
-        }, {});
-    } catch (error) {
-      console.error(error);
-      headers = {
-        'user-agent': 'air/1.0.0',
-      } as Headers;
-    }
-    let params = '';
-    let data: any = undefined;
-    if (url.includes('?')) {
-      [url, params = ''] = url.split('?');
-    }
-    if (['post', 'put'].includes(method.toLowerCase())) {
-      [url, data = ''] = url.split('?');
-      data = data
-        .split('&')
-        .map((item) => item.split('='))
-        .reduce((acc, cur) => {
-          acc[cur[0]] = cur[1];
-          return acc;
-        }, {});
-    }
-    return {
-      url: url,
-      params,
-      data,
-      method: method as Method,
-      encoding,
-      headers: headers,
-    };
   }
 }
 

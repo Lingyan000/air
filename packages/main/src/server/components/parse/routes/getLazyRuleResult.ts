@@ -11,6 +11,7 @@ import { Parse as ParseQuery } from '#/params';
 import { From } from '#/enums';
 import { isNil } from 'lodash';
 import ArticleListRule from '/@/apis/core/database/sqlite/models/articlelistrule';
+import { getMyUrl, splitProtoUrl } from '#/utils';
 
 export default function getRoute() {
   const route: RouteOptions<
@@ -52,16 +53,18 @@ export default function getRoute() {
       if (!rule) throw new Error('规则不存在');
       const airParse = new AirParse(rule, home, (request as any).session || {});
       if (request.body.from === From['search']) {
-        ({ url, params, data, encoding, method, headers } = airParse.splitProtoUrl(
+        ({ url, params, data, encoding, method, headers } = splitProtoUrl(
           rule.search_url || rule.url,
           {}
         ));
       } else {
-        ({ url, params, data, encoding, method, headers } = airParse.splitProtoUrl(rule.url, {}));
+        ({ url, params, data, encoding, method, headers } = splitProtoUrl(rule.url, {}));
       }
-      ({ url, params, data } = airParse.splitProtoUrl(request.body.url, {}));
+      ({ url, params, data } = splitProtoUrl(request.body.url, {}));
+      const myUrl = getMyUrl(request.body.url, {});
       return airParse
         .parseLazyRule({
+          myUrl,
           url: url,
           params,
           method,

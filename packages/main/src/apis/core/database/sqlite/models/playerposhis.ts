@@ -31,6 +31,4 @@ Playerposhis.init(
   }
 );
 
-Playerposhis.sync({ alter: true });
-
 export default Playerposhis;

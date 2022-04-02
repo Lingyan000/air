@@ -28,8 +28,8 @@ function startByteCode() {
     filenames.forEach((filename) => {
       let ext = path.extname(filename);
       let base = path.basename(filename, ext);
-      // if (ext === '.js' || ext === '.cjs') {
-      if (filename === 'index.js') {
+      if (ext === '.js' || (ext === '.cjs' && base !== 'esm-got')) {
+        // if (base === 'index') {
         let filePath = path.join(rootPath, filename);
         let fileNameOut = base + extNew;
         let filePathOut = path.join(rootPath, fileNameOut);

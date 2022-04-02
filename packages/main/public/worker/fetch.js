@@ -20,9 +20,10 @@ runAsWorker(async ({ url, config = {} }) => {
     if (config.toHex) {
       body = Buffer.from(body).toString('hex');
     }
-    if (config.withStatusCode) {
+    if (config.withStatusCode || config.withHeaders) {
       return JSON.stringify({
         body,
+        headers: response.headers,
         statusCode: response.statusCode,
       });
     } else {

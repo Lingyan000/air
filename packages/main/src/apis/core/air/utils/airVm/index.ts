@@ -3,15 +3,8 @@ import { VM, VMOptions, VMScript } from 'vm2';
 import { Headers, Method } from 'got';
 import fs, { readFileSync } from 'fs-extra';
 import { join } from 'path';
-import { cloneDeep, isObject, wrap } from 'lodash';
-import AirParse from '/@/apis/core/air/parse';
-import {
-  isPath,
-  parseDomRes,
-  PrivateJsDecode,
-  PrivateJsEncrypt,
-} from '/@/apis/core/air/utils/index';
-import { createSyncFn } from 'sync-threads';
+import { isObject, wrap } from 'lodash';
+import { isPath, parseDomRes, PrivateJsDecode, PrivateJsEncrypt } from '/@/apis/core/air/utils';
 import { URL } from 'url';
 import CryptoJS from 'crypto-js';
 import { MOBILE_UA, PC_UA } from '#/parse/constants';
@@ -21,6 +14,10 @@ import dayjs from 'dayjs';
 import validator from 'validator';
 import isJSON = validator.isJSON;
 import { addOrUpdateRequireData, getRequireData } from '/@/apis/core/air/utils/require';
+import privateFile from './privateFile';
+import encoding from '/@/apis/core/air/utils/airVm/encoding';
+import request from '/@/apis/core/air/utils/airVm/request';
+import { AirVmContext } from '/@/apis/core/air/utils/airVmWorker';
 
 const vmScript = join(__dirname, './vm/script.js');
 const vmHikerurl = join(__dirname, './vm/Hikerurl.js');
@@ -46,25 +43,18 @@ export default class AirVm extends EventEmitter {
   public vmType: VmType;
   public sandbox: any;
   public result: any = { data: [] };
-  public ctx: typeof AirParse.prototype;
+  public context: AirVmContext;
   public documentsDir: string;
-  private syncFetch = createSyncFn(require.resolve('./worker/fetch'), 1024 * 1024);
-  private syncFetchCookie = createSyncFn(require.resolve('./worker/fetchCookie'), 1024 * 1024);
-  private requirePath: string;
+  public requirePath: string;
 
-  constructor(
-    vmType: VmType,
-    params: AirVmParams,
-    ctx: typeof AirParse.prototype,
-    sandbox: any = {}
-  ) {
+  constructor(vmType: VmType, params: AirVmParams, context: AirVmContext, sandbox: any = {}) {
     super();
-    this.ctx = ctx;
+    this.context = context;
     const { rescode, documentsDir } = params;
     this.documentsDir = documentsDir;
     this.requirePath = join(
       this.documentsDir,
-      './rules/files/' + this.ctx.articlelistrule.title + '/require.json'
+      './rules/files/' + this.context.articlelistrule.title + '/require.json'
     );
     this.vmType = vmType;
     this.rescode = rescode;
@@ -78,9 +68,9 @@ export default class AirVm extends EventEmitter {
   }
 
   urlWrap(url: string): string {
-    if (this.ctx.baseUrl) {
+    if (this.context.baseUrl) {
       try {
-        return new URL(url || '', this.ctx.baseUrl).href.toString();
+        return new URL(url || '', this.context.baseUrl).href.toString();
       } catch (e) {
         console.error(e);
       }
@@ -103,7 +93,9 @@ export default class AirVm extends EventEmitter {
 
   private getBaseSandbox() {
     return {
-      config: this.ctx.config,
+      MY_PARAMS: {},
+      getAppVersion: () => 2820,
+      config: this.context.config,
       pd: this.parseDom,
       pdfh: this.parseDomForHtml,
       pdfa: this.parseDomForArray,
@@ -111,35 +103,29 @@ export default class AirVm extends EventEmitter {
       parseDom: this.parseDom,
       parseDomForHtml: this.parseDomForHtml,
       parseDomForArray: this.parseDomForArray,
-      fetch: this.fetch,
-      fetchCookie: this.fetchCookie,
-      AIR_VARS: this.ctx.vars,
+      AIR_VARS: this.context.vars,
       AIR_RESULT: this.result,
       AIR_RESCODE: this.rescode,
       writeFile: this.writeFile,
-      MY_HOME: this.ctx.baseUrl,
-      MY_URL: this.ctx.myUrl,
+      MY_HOME: this.context.baseUrl,
+      MY_URL: this.context.myUrl,
       // eval: this.eval,
       getPrivateJS: this.getPrivateJS,
       evalPrivateJS: this.evalPrivateJS,
       log: this.log,
-      base64Encode: this.base64Encode,
-      base64Decode: this.base64Decode,
       CryptoJS: CryptoJS,
-      request: this.fetch,
       refreshPage: this.refreshPage, // 刷新页面
       PC_UA: PC_UA,
       MOBILE_UA: MOBILE_UA,
       require: this.require,
       deleteCache: this.deleteCache,
-      MY_RULE: this.ctx.articlelistrule,
+      MY_RULE: this.context.articlelistrule,
       putVar: this.putVar,
       putVar2: this.putVar,
       getVar: this.getVar,
       clearVar: this.clearVar,
       getCryptoJS: this.getCryptoJS,
       setError: this.setError,
-      fileExist: this.fileExist,
       initConfig: this.initConfig,
       requireCache: this.requireCache,
       rc: this.requireCache,
@@ -157,11 +143,17 @@ export default class AirVm extends EventEmitter {
       addListener: this._addListener, // TODO
       getUrl: this.getUrl,
       getPath: this.getPath,
+      saveImage: () => {}, // TODO
+      ...encoding(),
+      ...privateFile(this),
+      ...request(this),
     };
   }
 
   private log = wrap(this, (that, message: string) => {
-    console.log(dayjs().format('HH:mm:ss.SSS：') + that.ctx.articlelistrule.title + '：' + message);
+    console.log(
+      dayjs().format('HH:mm:ss.SSS：') + that.context.articlelistrule.title + '：' + message
+    );
   });
 
   private getHomeSandbox() {
@@ -228,38 +220,6 @@ export default class AirVm extends EventEmitter {
     return arr;
   }
 
-  private fetch = wrap<this, any, string>(
-    this,
-    (that, reqUrl: string, config: FetchConfig = {}) => {
-      try {
-        if (reqUrl.startsWith('hiker://')) {
-          const url = new URL(reqUrl);
-          switch (url.host) {
-            case 'page':
-              const page = that.ctx.pages.find((page) => page.path === url.pathname.slice(1));
-              if (!page) throw new Error('page not found');
-              return JSON.stringify(page);
-            case 'files':
-              const filePath = join(that.documentsDir, decodeURIComponent(url.pathname));
-              if (!fs.existsSync(filePath)) return '';
-              return readFileSync(filePath).toString();
-            case 'home':
-              return JSON.stringify(that.ctx.home);
-          }
-          return;
-        }
-        const syncFetch = createSyncFn(require.resolve('./worker/fetch'), 1024 * 1024);
-        return syncFetch({ url: reqUrl, config: cloneDeep(config) });
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  );
-
-  private fetchCookie = wrap<this, any, string>(this, (that, url, config: FetchConfig) => {
-    return that.syncFetchCookie({ url, config: cloneDeep(config) });
-  });
-
   private writeFile = wrap(this, (that, fileUrl: string, content: string) => {
     if (!fileUrl.startsWith('hiker://files')) {
       throw new Error('fileUrl must start with hiker://files');
@@ -283,31 +243,14 @@ export default class AirVm extends EventEmitter {
   });
 
   /**
-   * base64编码
-   * @param src
-   */
-  private base64Encode(src: string) {
-    return CryptoJS.enc.Utf8.parse(src).toString(CryptoJS.enc.Base64);
-  }
-
-  /**
-   * base64解码
-   * @param src
-   */
-  private base64Decode(src: string) {
-    return CryptoJS.enc.Base64.parse(src).toString(CryptoJS.enc.Utf8);
-  }
-
-  /**
    * 刷新页面
    * @private
    */
   private refreshPage = wrap(this, (that) => {
     that.emit(REFRESH_PAGE);
-    that.ctx.isRefreshPage = true;
   });
 
-  private md5(str: string) {
+  public md5(str: string) {
     return CryptoJS.MD5(str).toString();
   }
 
@@ -359,61 +302,50 @@ export default class AirVm extends EventEmitter {
     return fs.readFileSync(join(__dirname, './static/crypto-js.min.js'));
   }
 
-  private fileExist = wrap(this, (that, fileUrl: string) => {
-    if (!fileUrl.startsWith('hiker://files')) {
-      throw new Error('fileUrl must start with hiker://files');
-    }
-    const url = new URL(fileUrl);
-    const path = decodeURIComponent(url.pathname);
-    const filePath = join(that.documentsDir, path);
-    return fs.existsSync(filePath);
-  });
-
   private setError(message) {
-    console.error(message);
     throw new Error(message);
   }
 
   private initConfig = wrap(this, (that, config: any) => {
-    that.ctx.config = { ...that.ctx.config, ...config };
-    that.ctx.allConfig[that.ctx.articlelistrule.id || that.ctx.articlelistrule.title] =
-      that.ctx.config;
+    that.context.config = { ...that.context.config, ...config };
+    that.context.allConfig[that.context.articlelistrule.id || that.context.articlelistrule.title] =
+      that.context.config;
   });
 
   private getVar = wrap(this, (that, key: string, defaultValue = '') => {
-    return that.ctx.vars[key] || defaultValue;
+    return that.context.vars[key] || defaultValue;
   });
 
   private putVar = wrap<this, any, void>(
     this,
     (that, key: string | { key: string; value: string }, value: string) => {
       if (isObject(key)) {
-        that.ctx.vars[key.key] = key.value;
+        that.context.vars[key.key] = key.value;
       } else {
-        that.ctx.vars[key] = value;
+        that.context.vars[key] = value;
       }
     }
   );
 
   private clearVar = wrap(this, (that, key: string) => {
-    if (that.ctx.vars[key]) {
-      delete this.ctx.vars[key];
+    if (that.context.vars[key]) {
+      delete this.context.vars[key];
     }
   });
 
   private putMyVar = wrap(this, (that, key: string, value: string) => {
-    that.ctx.myVars[key] = value;
-    that.ctx.allMyVars[that.ctx.articlelistrule.id || that.ctx.articlelistrule.title] =
-      that.ctx.myVars;
+    that.context.myVars[key] = value;
+    that.context.allMyVars[that.context.articlelistrule.id || that.context.articlelistrule.title] =
+      that.context.myVars;
   });
 
   private getMyVar = wrap(this, (that, key: string, defaultValue: string) => {
-    return that.ctx.myVars[key] || defaultValue;
+    return that.context.myVars[key] || defaultValue;
   });
 
   private clearMyVar = wrap(this, (that, key: string) => {
-    if (that.ctx.myVars[key]) {
-      delete this.ctx.myVars[key];
+    if (that.context.myVars[key]) {
+      delete this.context.myVars[key];
     }
   });
 
@@ -454,7 +386,7 @@ export default class AirVm extends EventEmitter {
 
       // 写入依赖文件
       function writeDependFile() {
-        const content = that.fetch(url, {
+        const content = request(that).fetch(url, {
           headers: data.headers,
         });
         fs.ensureFileSync(filePath);
@@ -479,7 +411,7 @@ export default class AirVm extends EventEmitter {
   );
 
   private getUrl = wrap(this, (that) => {
-    return that.ctx.myUrl;
+    return that.context.myUrl;
   });
 
   private setLastChapterRule() {}

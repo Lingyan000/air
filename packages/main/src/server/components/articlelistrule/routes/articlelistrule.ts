@@ -23,6 +23,10 @@ export default function getRoute() {
     handler: async () => {
       return await ArticleListRule.findAll();
     },
+    errorHandler: (error) => {
+      console.error(error);
+      return error;
+    },
   };
 
   return route;

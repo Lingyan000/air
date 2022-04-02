@@ -24,7 +24,6 @@ const handleAirSaveConfig = () => {
 
 const handleAirGetConfig = () => {
   ipcMain.on(AIR_GET_CONFIG, (event: IpcMainEvent, key: string | undefined, callbackId: string) => {
-    console.log(air);
     const result = air.getConfig(key);
     event.sender.send(AIR_GET_CONFIG, result, callbackId);
   });

@@ -1,21 +1,37 @@
 import AirVm, { VmType } from './airVm';
-import AirParse from '/@/apis/core/air/parse';
 import { MessagePort } from 'worker_threads';
-import { cloneDeep } from 'lodash';
 import * as socketConstList from '#/events/socket-constants';
+import util from 'util';
+import dayjs from 'dayjs';
+import { IPages } from '/@/apis/core/air/parse';
+import Articlelistrule from '/@/apis/core/database/sqlite/models/articlelistrule';
+
+export interface AirVmContext {
+  articlelistrule: Articlelistrule;
+  home: any;
+  baseUrl: string | undefined;
+  myUrl: string;
+  vars: { [key: string]: any };
+  allMyVars: { [key: string]: { [key: string]: any } };
+  colType: ColType;
+  pages: IPages[];
+  allConfig: { [key: string]: { [key: string]: any } };
+  config: { [key: string]: any };
+  myVars: { [key: string]: any };
+}
 
 export interface IAirVmWorkerParams {
   port: MessagePort;
   code: string;
   vmType: VmType;
-  ctx: AirParse;
+  context: AirVmContext;
   documentsDir: string;
   sandbox?: any;
   rescode?: string;
 }
 
 export default async (params: IAirVmWorkerParams) => {
-  const { port, code, vmType, documentsDir, ctx, sandbox = {}, rescode } = params;
+  const { port, code, vmType, documentsDir, context, sandbox = {}, rescode } = params;
 
   const airVm = new AirVm(
     vmType,
@@ -23,7 +39,7 @@ export default async (params: IAirVmWorkerParams) => {
       rescode,
       documentsDir,
     },
-    ctx,
+    context,
     sandbox
   );
 
@@ -40,18 +56,21 @@ export default async (params: IAirVmWorkerParams) => {
   try {
     const result = await airVm.vm?.run(code);
     return {
-      AIR_RESULT: cloneDeep(airVm.sandbox.AIR_RESULT),
+      AIR_RESULT: JSON.parse(JSON.stringify(airVm.sandbox.AIR_RESULT)),
       result,
-      ctx: {
-        vars: airVm.ctx.vars,
-        allConfig: airVm.ctx.allConfig,
-        allMyVars: airVm.ctx.allMyVars,
-        isRefreshPage: airVm.ctx.isRefreshPage,
+      context: {
+        vars: airVm.context.vars,
+        allConfig: airVm.context.allConfig,
+        allMyVars: airVm.context.allMyVars,
       },
       error: null,
     };
   } catch (e: any) {
-    console.error(e);
+    let log = `${dayjs().format('YYYY-MM-DD HH:mm:ss')} [AirVm Error] `;
+    log += `\n------Error Stack Begin------\n${util.format(
+      e.stack
+    )}\n-------Error Stack End------- `;
+    console.error(log);
     throw new Error(e.message);
   }
 };

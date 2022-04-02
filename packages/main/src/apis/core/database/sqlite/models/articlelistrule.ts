@@ -238,6 +238,4 @@ ArticleListRule.beforeUpdate((record) => {
   record.setDataValue('gmtmodified', dayjs().valueOf());
 });
 
-ArticleListRule.sync({ alter: true });
-
 export default ArticleListRule;

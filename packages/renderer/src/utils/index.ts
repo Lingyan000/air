@@ -224,10 +224,10 @@ export function isImageUrl(url: string) {
 export function isVideoUrl(url: string) {
   try {
     const url2 = new URL(url);
-    url = url2.pathname;
+    url = url2.pathname + url2.search;
   } catch (e) {}
   return (
-    /(mp4|mov|m4v|webm|flv|wmv|avi|3gp|mkv|m3u8).*/i.test(url) || /.*#isVideo=true#.*/i.test(url)
+    /(mp4|mov|m4v|webm|flv|wmv|avi|3gp|mkv|m3u8)/i.test(url) || /.*#isVideo=true#.*/i.test(url)
   );
 }
 

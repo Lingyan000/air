@@ -44,8 +44,6 @@ const config = {
     rollupOptions: {
       input: {
         index: resolve(__dirname, 'src/index.ts'),
-        // child_process: resolve(__dirname, 'src/child_process.ts'),
-        // airVm: resolve(__dirname, 'src/apis/core/air/utils/airVm.ts'),
         airVmWorker: resolve(__dirname, 'src/apis/core/air/utils/airVmWorker.ts'),
       },
       external: [

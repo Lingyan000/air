@@ -76,6 +76,4 @@ ViewHistory.init(
   }
 );
 
-ViewHistory.sync({ alter: true });
-
 export default ViewHistory;

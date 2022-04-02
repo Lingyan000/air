@@ -7,6 +7,7 @@ import type {
 import articlelistrule from '/@/apis/core/database/sqlite/models/articlelistrule';
 import AirParse from '/@/apis/core/air/parse';
 import { Parse as ParseQuery } from '#/params';
+import { getMyUrl, splitProtoUrl } from '#/utils';
 
 export default function getRoute() {
   const route: RouteOptions<
@@ -29,16 +30,11 @@ export default function getRoute() {
 
       const airParse = new AirParse(rule as any, home, (request as any).session || {});
       const parseCode = rule.find_rule;
-      const {
-        url,
-        params,
-        data,
-        encoding,
-        method = 'GET',
-        headers,
-      } = airParse.splitProtoUrl(rule?.url, {});
+      const { url, params, data, encoding, method = 'GET', headers } = splitProtoUrl(rule?.url, {});
+      const myUrl = getMyUrl(rule?.url, {});
       return airParse
         .parseCustomRule({
+          myUrl,
           url,
           params,
           method,

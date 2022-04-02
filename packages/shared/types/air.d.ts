@@ -1,5 +1,6 @@
 interface IParseRuleConfig {
   headers?: import('got').Headers;
+  myUrl: string;
   url: string;
   params: string;
   method: import('got').Method;

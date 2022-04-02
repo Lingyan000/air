@@ -9,6 +9,7 @@ import AirParse from '/@/apis/core/air/parse';
 import { Method } from 'got';
 import { Parse as ParseQuery } from '#/params';
 import { From } from '#/enums';
+import { getMyUrl, splitProtoUrl } from '#/utils';
 
 export default function getRoute() {
   const route: RouteOptions<
@@ -45,17 +46,16 @@ export default function getRoute() {
       if (request.query.from === From['search']) {
         const sdetail_find_rule = rule.sdetail_find_rule;
         parseCode = sdetail_find_rule === '*' ? rule.detail_find_rule : sdetail_find_rule;
-        ({ url, params, data, encoding, method, headers } = airParse.splitProtoUrl(
-          rule?.search_url,
-          {}
-        ));
+        ({ url, params, data, encoding, method, headers } = splitProtoUrl(rule?.search_url, {}));
       } else {
         parseCode = rule?.detail_find_rule;
-        ({ url, params, data, encoding, method, headers } = airParse.splitProtoUrl(rule?.url, {}));
+        ({ url, params, data, encoding, method, headers } = splitProtoUrl(rule?.url, {}));
       }
-      ({ url, params, data } = airParse.splitProtoUrl(request.query.url, {}));
+      ({ url, params, data } = splitProtoUrl(request.query.url, {}));
+      const myUrl = getMyUrl(request.query.url, {});
       return airParse
         .parseDetailRule({
+          myUrl,
           url,
           params,
           method,

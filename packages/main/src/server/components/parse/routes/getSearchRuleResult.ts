@@ -7,6 +7,7 @@ import type {
 import articlelistrule from '/@/apis/core/database/sqlite/models/articlelistrule';
 import AirParse from '/@/apis/core/air/parse';
 import { Parse as ParseQuery } from '#/params';
+import { getMyUrl, splitProtoUrl } from '#/utils';
 
 export default function getRoute() {
   const route: RouteOptions<
@@ -43,9 +44,11 @@ export default function getRoute() {
         encoding,
         method,
         headers,
-      } = airParse.splitProtoUrl(rule.search_url, fyPageParams);
+      } = splitProtoUrl(rule.search_url, fyPageParams);
+      const myUrl = getMyUrl(rule.search_url, fyPageParams);
       return airParse
         .parseSearchRule({
+          myUrl,
           url: url,
           params: ruleParams,
           method,

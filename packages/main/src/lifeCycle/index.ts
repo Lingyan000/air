@@ -64,7 +64,6 @@ class LifeCycle {
       }
 
       if (process.argv.length > 1) {
-        console.log(process.argv);
         const path = process.argv[1];
         importHikerFile(path);
       }

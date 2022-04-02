@@ -4,6 +4,7 @@ import { join } from 'path';
 import air from '/@/apis/core/air';
 import { nativeTheme } from 'electron';
 import windowStateKeeper from 'electron-window-state';
+import dbSync from '/@/apis/core/database/sqlite/sync';
 
 const windowList = new Map<IWindowList, IWindowListItem>();
 const isDevelopment = import.meta.env.MODE === 'development';
@@ -66,7 +67,7 @@ windowList.set(IWindowList.MAIN_WINDOW, {
     }
     return options;
   },
-  callback(window) {
+  async callback(window) {
     savedWindowState?.manage(window);
 
     window.on('ready-to-show', () => {
@@ -80,6 +81,7 @@ windowList.set(IWindowList.MAIN_WINDOW, {
         window?.webContents.openDevTools();
       }
     });
+    await dbSync();
     window.loadURL(MAIN_WINDOW_URL);
   },
 });
