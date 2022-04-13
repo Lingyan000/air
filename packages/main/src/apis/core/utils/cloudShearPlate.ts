@@ -1,6 +1,7 @@
 import { CLOUD_SHEAR_PLATE_MAP } from '#/config';
 import axios from 'axios';
 import cheerio from 'cheerio';
+import htmlparser2 from 'htmlparser2';
 
 export class CloudShearPlate {
   public type: CloudShearPlateType | null = null;
@@ -38,7 +39,8 @@ export class CloudShearPlate {
 
   private getCloud5(): Promise<string> {
     return axios.get(this.url).then((res) => {
-      const $ = cheerio.load(res.data);
+      const dom = htmlparser2.parseDocument(res.data);
+      const $ = cheerio.load(dom);
       return $('.test_box').text();
     });
   }

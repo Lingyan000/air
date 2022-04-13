@@ -13,6 +13,8 @@ declare module 'vue' {
     BigBlankBlock: typeof import('./components/AirColComponent/BigBlankBlock.vue')['default']
     BlankBlock: typeof import('./components/AirColComponent/BlankBlock.vue')['default']
     DetailPanel: typeof import('./components/DetailPanel/DetailPanel.vue')['default']
+    DetailPanelList: typeof import('./components/DetailPanelList/DetailPanelList.vue')['default']
+    HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     Icon2Round: typeof import('./components/AirColComponent/Icon2Round.vue')['default']
     IconRoundSmall4: typeof import('./components/AirColComponent/IconRoundSmall4.vue')['default']
     IconSmall3: typeof import('./components/AirColComponent/IconSmall3.vue')['default']
@@ -55,6 +57,7 @@ declare module 'vue' {
     NPagination: typeof import('naive-ui')['NPagination']
     NRow: typeof import('naive-ui')['NRow']
     NScrollbar: typeof import('naive-ui')['NScrollbar']
+    NSkeleton: typeof import('naive-ui')['NSkeleton']
     NSpace: typeof import('naive-ui')['NSpace']
     NSpin: typeof import('naive-ui')['NSpin']
     NText: typeof import('naive-ui')['NText']
@@ -74,6 +77,8 @@ declare module 'vue' {
     TextCenter1: typeof import('./components/AirColComponent/TextCenter1.vue')['default']
     ViewHistory: typeof import('./components/ViewHistory/ViewHistory.vue')['default']
     ViewHistoryItem: typeof import('./components/ViewHistory/ViewHistoryItem.vue')['default']
+    VirtualGrid: typeof import('./components/VirtualGrid/VirtualGrid.vue')['default']
+    X5WebviewSingle: typeof import('./components/AirColComponent/X5WebviewSingle.vue')['default']
   }
 }
 

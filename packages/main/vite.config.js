@@ -88,12 +88,12 @@ const config = {
         'fastify-server-session',
         'fastify-caching',
         'xregexp',
-        'async',
         'piscina',
         'electron-window-state',
         'validator',
         'fastify-socket.io',
         'sync-threads',
+        '@yongteng/cheerio',
         ...builtinModules,
       ],
       output: {

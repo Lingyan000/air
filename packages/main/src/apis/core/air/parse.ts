@@ -1,6 +1,7 @@
 import { Got } from 'got';
 import iconv from 'iconv-lite';
-import cheerio, { CheerioAPI } from 'cheerio';
+import { CheerioAPI } from '@yongteng/cheerio';
+import cheerio from '/@/utils/custom-cheerio';
 import { VM } from 'vm2';
 import {
   codeToJs,

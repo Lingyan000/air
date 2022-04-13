@@ -155,6 +155,11 @@
       url: url,
       subtitle: {
         url: subtitle ? subtitle : '',
+        style: {
+          fontSize: '2.5vw',
+          textShadow:
+            'rgb(34 34 34) 0px 0px 4px, rgb(34 34 34) 0px 0px 4px, rgb(34 34 34) 0px 0px 4px, rgb(34 34 34) 0px 0px 4px',
+        },
       },
       autoplay: true,
       fullscreen: true,
@@ -270,9 +275,7 @@
           artInstance.switchUrl(url, title);
           artInstance.type = isHlsUrl(url) ? 'm3u8' : '';
           // artInstance.url = url;
-          artInstance.subtitle = {
-            url: subtitle ? subtitle : '',
-          };
+          artInstance.subtitle.url = subtitle ? subtitle : '';
           artInstance.plugins.artplayerPluginDanmuku
             .config({
               danmuku: danmu ? danmu : [],

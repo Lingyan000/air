@@ -45,6 +45,7 @@ const config = {
     ],
   },
   nsis: {
+    deleteAppDataOnUninstall: true,
     oneClick: false,
     allowToChangeInstallationDirectory: true,
     shortcutName: '空气',

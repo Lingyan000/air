@@ -1,4 +1,4 @@
-import cheerio from 'cheerio';
+import cheerio from '/@/utils/custom-cheerio';
 import { VM, VMOptions, VMScript } from 'vm2';
 import { Headers, Method } from 'got';
 import fs, { readFileSync } from 'fs-extra';

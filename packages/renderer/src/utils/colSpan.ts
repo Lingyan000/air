@@ -36,7 +36,7 @@ export const normalSpan: { [key in ColType]: string } = {
   text_4: '6',
   text_5: '4',
   text_center_1: '24 800:48 1000:64',
-  x5_webview_single: '',
+  x5_webview_single: '24 800:48 1000:64',
   pic_1: '24 800:48 1000:64',
   text_3: '8',
   big_blank_block: '24 800:48 1000:64',

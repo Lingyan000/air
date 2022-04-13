@@ -15,6 +15,7 @@
   const currentPage: Ref<number> = ref(1);
   const pageSize: Ref<number> = ref(50);
   const count: Ref<number> = ref(0);
+  const loading: Ref<boolean> = ref(false);
 
   function show() {
     active.value = true;
@@ -22,13 +23,18 @@
   }
 
   function getData() {
+    loading.value = true;
     all({
       currentPage: currentPage.value,
       pageSize: pageSize.value,
-    }).then((res) => {
-      data.value = res.rows;
-      count.value = res.count;
-    });
+    })
+      .then((res) => {
+        data.value = res.rows;
+        count.value = res.count;
+      })
+      .finally(() => {
+        loading.value = false;
+      });
   }
 
   function onClickItem(item: Model.ViewHistory) {
@@ -63,13 +69,18 @@
       body-content-style="min-height: 100%"
       title="历史记录"
     >
-      <div style="min-height: 100%">
+      <template v-if="loading">
         <n-grid x-gap="12" y-gap="8" cols="1 600:2 1200:4">
-          <n-gi v-for="item in data" :key="item.id" @click="onClickItem(item)">
-            <view-history-item :data="item" />
+          <n-gi v-for="i in 3" :key="i">
+            <n-skeleton style="height: 8em" :sharp="false" />
           </n-gi>
         </n-grid>
-      </div>
+      </template>
+      <n-grid v-else x-gap="12" y-gap="8" cols="1 600:2 1200:4">
+        <n-gi v-for="item in data" :key="item.id" @click="onClickItem(item)">
+          <view-history-item :data="item" />
+        </n-gi>
+      </n-grid>
       <template #footer>
         <n-pagination v-model:page="currentPage" :page-count="Math.ceil(count / pageSize) || 1" />
       </template>

@@ -11,7 +11,7 @@
   import { HIDE_LOADING, SHOW_LOADING } from '#/events/socket-constants';
   import { useSocket } from '/@/hooks/socket';
   import VueElementLoading from 'vue-element-loading';
-  import DetailPanelList from '/@/components/DetailPanelList/DetailPanelList';
+  import DetailPanelList from '/@/components/DetailPanelList/DetailPanelList.vue';
   import { DetailPanelOption } from '/@/components/DetailPanel/DetailPanel.vue';
   import PlayerPanel from '/@/components/PlayerPanel/PlayerPanel.vue';
   import * as Model from '#/models';
@@ -58,7 +58,7 @@
    */
   function showDetailPanel(option: DetailPanelOption) {
     detailPanelListRef.value?.add().then((detailPanel) => {
-      detailPanel.component.exposed.show(option);
+      detailPanel.show(option);
     });
   }
 
@@ -103,7 +103,7 @@
         lastclickTitle: item.title || '',
         lastclickIndex: index,
       };
-      return recordClick(params);
+      return recordClick(params).catch(() => {});
     }
 
     let params: ViewHistoryQuery.Record = {

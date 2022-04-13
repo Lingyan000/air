@@ -17,6 +17,7 @@ class ArticleListRule extends Model<InferAttributes<ArticleListRule>> {
   declare find_rule: string;
   declare firstheader: string;
   declare group_lpcolumn: string;
+  declare movie_find: string;
   declare prerule: string;
   declare sdetail_col_type: string;
   declare sdetail_find_rule: string;
@@ -108,6 +109,11 @@ ArticleListRule.init(
       unique: false,
       allowNull: true,
     }, // 分组排序
+    movie_find: {
+      type: DataTypes.TEXT,
+      unique: false,
+      allowNull: true,
+    },
     prerule: {
       type: DataTypes.TEXT,
       unique: false,

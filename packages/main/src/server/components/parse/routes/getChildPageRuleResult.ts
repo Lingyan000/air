@@ -12,6 +12,7 @@ import { From } from '#/enums';
 import { isNil } from 'lodash';
 import ArticleListRule from '/@/apis/core/database/sqlite/models/articlelistrule';
 import { getMyUrl, splitProtoUrl } from '#/utils';
+import { nanoid } from 'nanoid';
 
 export default function getRoute() {
   const route: RouteOptions<
@@ -74,6 +75,9 @@ export default function getRoute() {
             fypage: request.body.fypage,
           },
           preParseCode: rule.prerule,
+        })
+        .then((res) => {
+          return res.map((item) => ({ ...item, id: nanoid() }));
         })
         .finally(() => {
           (request as any).session.vars = airParse.vars;

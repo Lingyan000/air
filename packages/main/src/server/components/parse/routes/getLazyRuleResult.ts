@@ -78,9 +78,6 @@ export default function getRoute() {
         })
         .then((res) => {
           return {
-            handle: {
-              isRefreshPage: airParse.isRefreshPage,
-            },
             data: res,
           };
         })

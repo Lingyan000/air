@@ -8,6 +8,11 @@
   }
 }
 
+@font-face {
+  font-family: TwemojiMozilla;
+  src: url(/assets/font/TwemojiMozilla.ttf) format('truetype');
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -16,4 +21,6 @@
 
 body {
   --header-height: 31px;
+  font-family: v-sans, system-ui, -apple-system, BlinkMacSystemFont, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI', 'Segoe UI Symbol', 'TwemojiMozilla';
 }

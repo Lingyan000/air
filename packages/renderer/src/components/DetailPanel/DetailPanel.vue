@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { ref, defineExpose, Ref, computed, watch } from 'vue';
+  import { ref, defineExpose, Ref, computed, watch, onBeforeUnmount, nextTick } from 'vue';
   import {
     getChildPageRuleResult,
     getCustomRuleResult,
@@ -30,6 +30,10 @@
     rule?: string;
   }
 
+  const { id: componentId } = defineProps<{
+    id: string;
+  }>();
+
   const artilelistruleStore = useArtilelistruleStore();
 
   const artilelistruleListMap = computed(() => artilelistruleStore.listMap);
@@ -42,7 +46,7 @@
       index: number,
       origin?: any
     ): void;
-    (e: 'close'): void;
+    (e: 'close', id: string): void;
   }>();
 
   const currentPage: Ref<number> = ref(1);
@@ -57,9 +61,9 @@
   const urlRef = ref<string>('');
   const titleRef = ref<string>('');
   const viewHistoryRef = ref<Models.ViewHistory | null>(null);
-  const trackShowTimeRef = ref(0);
   const trackShowDuration = 10000; // 足迹展示时长
   const ruleRef = ref<string>('');
+  const showTrackRef = ref(false);
 
   const active = ref(false);
 
@@ -154,22 +158,24 @@
     }).then((res) => {
       if (res) {
         viewHistoryRef.value = res;
-        trackShowTimeRef.value = trackShowDuration;
-        const timer = setInterval(() => {
-          trackShowTimeRef.value -= 1000;
-          if (trackShowTimeRef.value <= 0) {
-            clearInterval(timer);
-          }
-        }, 1000);
+        showTrackRef.value = true;
+        const time = window.setTimeout(() => {
+          showTrackRef.value = false;
+        }, trackShowDuration);
+        onBeforeUnmount(() => {
+          window.clearTimeout(time);
+        });
       }
     });
   }
 
   watch(active, (value) => {
-    !value &&
-      window.setTimeout(() => {
-        emit('close');
-      }, 300);
+    if (!value) {
+      detailData.value = [];
+      nextTick(() => {
+        emit('close', componentId);
+      });
+    }
   });
 
   function close() {
@@ -232,6 +238,7 @@
   defineExpose({
     show,
     refresh,
+    id: componentId,
   });
 </script>
 
@@ -249,7 +256,7 @@
         <n-page-header :title="wrapTextToHtml(titleRef, true)" @back="handleBack"></n-page-header>
       </template>
       <n-button
-        v-if="viewHistoryRef && viewHistoryRef.lastclick && trackShowTimeRef"
+        v-if="viewHistoryRef && viewHistoryRef.lastclick && showTrackRef"
         type="primary"
         round
         class="tw-fixed tw-z-10 tw-bottom-md tw-right-md"

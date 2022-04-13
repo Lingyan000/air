@@ -3,7 +3,6 @@ import Home from '/@/views/home/index.vue';
 import Setting from '/@/views/setting/index.vue';
 import Layout from '/@/layout/index.vue';
 import ApiDocument from '/@/views/apiDocument/index.vue';
-import Player from '/@/views/player/index.vue';
 
 const routes = [
   {
@@ -19,7 +18,6 @@ const routes = [
       index: 0,
     },
   },
-  { path: '/player', nmae: 'player', component: Player },
 ];
 
 export default createRouter({

@@ -31,36 +31,38 @@
   import Text4 from './Text4.vue';
   import Line from './Line.vue';
   import BigBlankBlock from './BigBlankBlock.vue';
+  import X5WebviewSingle from './X5WebviewSingle.vue';
 
   export default defineComponent({
     name: 'AirColComponent',
 
     components: {
-      pic_1: Pic1,
-      long_text: LongText,
-      text_5: Text5,
-      text_3: Text3,
-      text_2: Text2,
-      text_1: Text1,
-      text_4: Text4,
-      text_center_1: TextCenter1,
-      movie_3: Movie3,
-      movie_1_vertical_pic_blur: Movie1VerticalPicBlur,
-      icon_2_round: Icon2Round,
-      movie_2: Movie2,
-      blank_block: BlankBlock,
-      avatar: Avatar,
-      movie_1_vertical_pic: Movie1VerticalPic,
-      movie_1: Movie1,
-      movie_1_left_pic: Movie1LeftPic,
-      icon_small_3: IconSmall3,
-      line_blank: LineBlank,
-      icon_round_small_4: IconRoundSmall4,
-      rich_text: RichText,
-      scroll_button: ScrollButton,
-      pic_2: Pic2,
-      line: Line,
-      big_blank_block: BigBlankBlock,
+      air_pic_1: Pic1,
+      air_long_text: LongText,
+      air_text_5: Text5,
+      air_text_3: Text3,
+      air_text_2: Text2,
+      air_text_1: Text1,
+      air_text_4: Text4,
+      air_text_center_1: TextCenter1,
+      air_movie_3: Movie3,
+      air_movie_1_vertical_pic_blur: Movie1VerticalPicBlur,
+      air_icon_2_round: Icon2Round,
+      air_movie_2: Movie2,
+      air_blank_block: BlankBlock,
+      air_avatar: Avatar,
+      air_movie_1_vertical_pic: Movie1VerticalPic,
+      air_movie_1: Movie1,
+      air_movie_1_left_pic: Movie1LeftPic,
+      air_icon_small_3: IconSmall3,
+      air_line_blank: LineBlank,
+      air_icon_round_small_4: IconRoundSmall4,
+      air_rich_text: RichText,
+      air_scroll_button: ScrollButton,
+      air_pic_2: Pic2,
+      air_line: Line,
+      air_big_blank_block: BigBlankBlock,
+      air_x_5_webview_single: X5WebviewSingle,
     },
 
     props: {
@@ -88,7 +90,7 @@
 
     setup(props) {
       const currentColComponent = computed(() => {
-        return snakeCase(props.colType);
+        return 'air_' + snakeCase(props.colType);
       });
 
       provide(airHomeComponentInjectionKey, {

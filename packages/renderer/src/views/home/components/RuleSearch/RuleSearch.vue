@@ -168,7 +168,6 @@
             borderRadius: '12px',
             padding: '0',
           }"
-          :animated="false"
           display-directive="show"
         >
           <template #default>
@@ -187,10 +186,10 @@
                       v-for="(item, index) in groups"
                       :key="index"
                       ghost
-                      class="homeAirSearch__group-btn tw-leading-normal tw-tracking-wide"
+                      class="homeAirSearch__group-btn tw-leading-normal"
                       :type="groupRef === item ? 'primary' : 'default'"
                       @click="filterSearchList(item)"
-                      ><n-ellipsis>{{ item }}</n-ellipsis></n-button
+                      ><span class="tw-truncate">{{ item }}</span></n-button
                     >
                   </n-space>
                 </div>
@@ -229,7 +228,14 @@
               placeholder="搜索"
               round
               size="large"
-              @keyup.enter="handleSearch"
+              @keyup.enter="
+                (event: any) => {
+                  $nextTick(() => {
+                    event.target.blur();
+                  });
+                  handleSearch();
+                }
+              "
             />
           </template>
           <n-scrollbar :style="{ maxHeight: popMaxHeight - 30 + 'px' }">

@@ -10,6 +10,7 @@ import { Method } from 'got';
 import { Parse as ParseQuery } from '#/params';
 import { From } from '#/enums';
 import { getMyUrl, splitProtoUrl } from '#/utils';
+import { nanoid } from 'nanoid';
 
 export default function getRoute() {
   const route: RouteOptions<
@@ -64,6 +65,9 @@ export default function getRoute() {
           encoding,
           headers,
           preParseCode: rule.prerule,
+        })
+        .then((res) => {
+          return res.map((item) => ({ ...item, id: nanoid() }));
         })
         .finally(() => {
           (request as any).session.vars = airParse.vars;

@@ -2,7 +2,7 @@ import { join } from 'path';
 import air from '/@/apis/core/air';
 import fs from 'fs-extra';
 
-const DB_VERSION = 50;
+const DB_VERSION = 51;
 
 const dbDir = join(air.baseDir, 'db');
 const exist = fs.existsSync(dbDir);

@@ -2,6 +2,7 @@
   import { inject } from 'vue';
   import { NEllipsis } from 'naive-ui';
   import { airHomeComponentInjectionKey } from '/@/components/AirColComponent/interface';
+  import { wrapTextToHtml, isCanWrapText } from '/@/utils/text';
 
   const { titleRef, picUrlRef, descRef } = inject(airHomeComponentInjectionKey)!;
 </script>
@@ -9,9 +10,12 @@
 <template>
   <n-element class="air-col-movie1">
     <div class="air-col-movie1__content">
-      <n-ellipsis class="air-col-movie1__title" :line-clamp="2" :tooltip="false"
-        >{{ titleRef }}
-      </n-ellipsis>
+      <n-ellipsis
+        class="air-col-movie1__title"
+        :line-clamp="2"
+        :tooltip="false"
+        v-html="wrapTextToHtml(titleRef, !isCanWrapText(titleRef))"
+      />
       <n-ellipsis class="air-col-movie1__desc" :line-clamp="3" :tooltip="false"
         >{{ descRef }}
       </n-ellipsis>
